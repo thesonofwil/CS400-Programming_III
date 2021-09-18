@@ -10,6 +10,7 @@ import java.util.Scanner;
  * @author Wilson Tjoeng
  * tjoeng@wisc.edu
  * CS400 010
+ * Due: 9/23/21
  * 
  * This program uses the Scanner class to read an input file containing a 
  * list of movies and rates them, writing a randomly generated opinion onto 
