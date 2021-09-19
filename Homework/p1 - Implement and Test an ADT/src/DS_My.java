@@ -16,29 +16,33 @@ public class DS_My implements DataStructureADT< String, String > {
     // such a class and its members should be "private"
 	
 	// Inner class defining key-value pair relationship
-	private class Pair {
+	private class Node {
 		private String key;
 		private String value;
+		private Node next;
 		
 		// Inner constructor
-		private Pair(String K, String V) {
+		private Node(String K, String V) {
 			this.key = K;
 			this.value = V;
+			Node next = null; 
 		}
 	}
     // Private Fields of the class
     // TODO create field(s) here to store data pairs
-	private DS_My.Pair[] list; // Array representation of pairs
+	
+	//private DS_My.Pair[] list; // Array representation of pairs
 	private int numElements; // number of elements in list
 	private int size; // size of list 
-
+	private Node head; // start of linked list
 	/**
 	 * Construct a new DS_My list of pairs of an arbitrary size
 	 */
     public DS_My() {
     	size = 5;
     	numElements = 0;
-    	list = new Pair[size];
+    	//list = new Pair[size];
+    	Node head = null;
     }
 
 	@Override
@@ -57,12 +61,27 @@ public class DS_My implements DataStructureADT< String, String > {
 			throw new IllegalArgumentException("null key");
 		}
 		
-		if (numElements == size) {
-			grow();
-		}
+//		if (numElements == size) {
+//			grow();
+//		}
 		
-		Pair pair = new Pair(key, value);
-		this.list[numElements] = pair;
+		//Pair pair = new Pair(key, value);
+		Node newNode = new Node(key,value);
+		
+		// Insert new pair at end of linked list
+		if (this.head == null) {
+			this.head = newNode;
+		} else {
+			Node curr = this.head;
+			while (curr.next != null) {
+				curr = curr.next;
+			}
+			
+			// Insert new node at last node
+			curr.next = newNode;
+			
+		}
+		//this.list[numElements] = pair;
 		this.numElements++;
 	}
 
@@ -104,37 +123,37 @@ public class DS_My implements DataStructureADT< String, String > {
 	@Override
 	// Despite name of name of method and fields, returns the number of elements in list
 	public int size() {
-		// TODO Auto-generated method stub
 		return this.numElements;
 	}
+}
     
-	// Create a larger list if at capacity
-	private void grow() {
-		size *= 2;
-		
-		DS_My.Pair[] tmp = new Pair[size];
-		for (int i = 0; i < size; i++) {
-			tmp[i] = this.list[i];
-		}
-		this.list = tmp;
-	}
-	
-	/**
-	 * Find the index of a key in DS_My list
-	 * @param K The key to search for
-	 * @return index of key. -1 if not found
-	 */
-	private int find(String K) {
-		int index = -1;
-		
-		for (int i = 0; i < numElements; i++) {
-			if (this.list[i].key.equals(K)) {
-				index = i;
-				break;
-			}
-		}
-		return index;
-	}
-
-}                            
+//	// Create a larger list if at capacity
+//	private void grow() {
+//		size *= 2;
+//		
+//		DS_My.Pair[] tmp = new Pair[size];
+//		for (int i = 0; i < size; i++) {
+//			tmp[i] = this.list[i];
+//		}
+//		this.list = tmp;
+//	}
+//	
+//	/**
+//	 * Find the index of a key in DS_My list
+//	 * @param K The key to search for
+//	 * @return index of key. -1 if not found
+//	 */
+//	private int find(String K) {
+//		int index = -1;
+//		
+//		for (int i = 0; i < numElements; i++) {
+//			if (this.list[i].key.equals(K)) {
+//				index = i;
+//				break;
+//			}
+//		}
+//		return index;
+//	}
+//
+//}                            
     
