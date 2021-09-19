@@ -15,17 +15,19 @@ public class DS_My implements DataStructureADT< String, String > {
     // for storing key and value as a pair
     // such a class and its members should be "private"
 	
-	// Inner class defining key-value pair relationship
+	// Inner class - doubly linked list defining key-value pair relationship
 	private class Node {
 		private String key;
 		private String value;
 		private Node next;
+		private Node prev;
 		
-		// Inner constructor
+		// Inner constructor 
 		private Node(String K, String V) {
 			this.key = K;
 			this.value = V;
-			Node next = null; 
+			this.next = null; 
+			this.prev = null;
 		}
 	}
     // Private Fields of the class
@@ -42,7 +44,7 @@ public class DS_My implements DataStructureADT< String, String > {
     	size = 5;
     	numElements = 0;
     	//list = new Pair[size];
-    	Node head = null;
+    	head = null;
     }
 
 	@Override
@@ -68,17 +70,13 @@ public class DS_My implements DataStructureADT< String, String > {
 		//Pair pair = new Pair(key, value);
 		Node newNode = new Node(key,value);
 		
-		// Insert new pair at end of linked list
+		// Insert new node at head if empty or end of list if not
 		if (this.head == null) {
 			this.head = newNode;
 		} else {
-			Node curr = this.head;
-			while (curr.next != null) {
-				curr = curr.next;
-			}
-			
-			// Insert new node at last node
-			curr.next = newNode;
+			Node last = find(key);
+			last.next = newNode;
+			newNode.prev = last;
 			
 		}
 		//this.list[numElements] = pair;
@@ -98,13 +96,24 @@ public class DS_My implements DataStructureADT< String, String > {
 			return false;
 		}
 		
-		int index = find(key);
-		if (index >= 0) {
-			this.list[index] = null;
-			this.numElements--;
+		Node curr = find(key);
+		
+		// If deleting head, set head to next node
+		if (this.head.key.equals(curr.key)) {
+			this.head = this.head.next;
+			this.head.prev = null;
+		} else {
+			curr.prev = curr.next;
+		}
+		
+		this.numElements--;
+//		int index = find(key);
+//		if (index >= 0) {
+//			this.list[index] = null;
+//			this.numElements--;
 			
 			// After removing, need to re-organize list
-		}
+//		}
 		return true;
 	}
 
@@ -125,8 +134,33 @@ public class DS_My implements DataStructureADT< String, String > {
 	public int size() {
 		return this.numElements;
 	}
-}
     
+	// Return the last node in list 
+	private Node find() { 
+		
+		// Loop through nodes starting at head
+		Node curr = this.head;
+		while (curr.next != null) {
+			curr = curr.next;
+		}
+		
+		return curr;
+	}
+	
+	// Return node given a key 
+	private Node find(String K) {
+		if (K == null) {
+			throw new IllegalArgumentException("null key");
+		}
+		
+		Node curr = this.head;
+		while (curr.next != null || curr.key.equals(K)) {
+			curr = curr.next;
+		}
+		
+		return curr;
+	}
+}
 //	// Create a larger list if at capacity
 //	private void grow() {
 //		size *= 2;
