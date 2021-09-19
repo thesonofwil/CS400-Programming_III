@@ -102,25 +102,26 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	String key = "1";
         String value = "one";
         ds.insert(key, value);
-        assert(ds,size() == 1);
-        int t = ds.get("1");
+        assert(ds.size() == 1);
+        String t = ds.get("1");
         assert(ds.contains("1"));
         assert(ds.size() == 1);
     }
     
-    @Test(expected = IllegalArgumentExceptions.class)
+    @Test
     void test07_get_throws_exception_if_key_is_null() { 
-    	ds.get(null);
+    	try {
+    		ds.get(null);
+    		fail("illegal argument exception not thrown");
+    	} catch (IllegalArgumentException e) { }
     }
     
     @Test
     void test08_ds_contains_keys() { 
-    	String key = "1";
-        String value = "one";
         ds.insert("1", "one");
         ds.insert("2", "two");
         assert (ds.contains("1"));
-        assert (ds.contains("1"));
+        assert (ds.contains("2"));
     }
     
     @Test
@@ -131,17 +132,25 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (!ds.contains("one")); // contains should only work on keys
     }
     
-    @Test(expected = IllegalArgumentExceptions.class)
-    void test10_remove_null_key_throws_exception_and_size_stays_the_same {
+    @Test
+    void test10_remove_null_key_throws_exception_and_size_stays_the_same() {
     	ds.insert("1", "one");
-    	ds.remove("null");
-    	assert (ds.size == 1);
+    	try {
+    		ds.remove("null");
+    		fail("illegal argument exception not thrown");
+    	} catch (IllegalArgumentException e) { }
+    	assert (ds.size() == 1);
     }
     
-    @Test (expected = EmptyException.class)
+    // Empty exception should be thrown if removing when there are no keys
+    @Test
     void test11_remove_empty_ds_throws_exception() {
-    	assert (ds.size==0);
-    	ds.remove("One");
+    	assert (ds.size() == 0);
+    	try {
+    		ds.remove("One");
+    		fail("empty exception not thrown");
+    	} catch (RuntimeException e) {}
+    	assert (ds.size() == 0);
     }
     // TODO: add more tests of your own design to ensure that you can detect implementation that fail
     
