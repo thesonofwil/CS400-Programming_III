@@ -85,7 +85,64 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
 
     
     // TODO: add tests 05 - 07 as described in assignment
-
+    
+    @Test
+    void test05_get_after_inserts() {
+    	assert (ds.get("a") == null); // return null if key isn't in DS
+    	String key = "1";
+        String value = "one";
+        ds.insert("1", "one");
+        ds.insert("2", "two");
+        assert (ds.get("1") == "one");
+        assert (ds.get("2") == "two");
+    }
+    
+    @Test
+    void test06_get_does_not_remove_and_change_size() {
+    	String key = "1";
+        String value = "one";
+        ds.insert(key, value);
+        assert(ds,size() == 1);
+        int t = ds.get("1");
+        assert(ds.contains("1"));
+        assert(ds.size() == 1);
+    }
+    
+    @Test(expected = IllegalArgumentExceptions.class)
+    void test07_get_throws_exception_if_key_is_null() { 
+    	ds.get(null);
+    }
+    
+    @Test
+    void test08_ds_contains_keys() { 
+    	String key = "1";
+        String value = "one";
+        ds.insert("1", "one");
+        ds.insert("2", "two");
+        assert (ds.contains("1"));
+        assert (ds.contains("1"));
+    }
+    
+    @Test
+    void test09_ds_does_not_contain_keys() {
+    	assert (!ds.contains(null));
+    	assert (!ds.contains("1"));
+    	ds.insert("1", "one");
+    	assert (!ds.contains("one")); // contains should only work on keys
+    }
+    
+    @Test(expected = IllegalArgumentExceptions.class)
+    void test10_remove_null_key_throws_exception_and_size_stays_the_same {
+    	ds.insert("1", "one");
+    	ds.remove("null");
+    	assert (ds.size == 1);
+    }
+    
+    @Test (expected = EmptyException.class)
+    void test11_remove_empty_ds_throws_exception() {
+    	assert (ds.size==0);
+    	ds.remove("One");
+    }
     // TODO: add more tests of your own design to ensure that you can detect implementation that fail
     
     // Tip: consider different numbers of inserts and removes and how different combinations of insert and removes
