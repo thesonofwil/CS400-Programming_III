@@ -35,13 +35,13 @@ public class DS_My implements DataStructureADT< String, String > {
 	
 	//private DS_My.Pair[] list; // Array representation of pairs
 	private int numElements; // number of elements in list
-	private int size; // size of list 
+	//private int size; // size of list 
 	private Node head; // start of linked list
 	/**
 	 * Construct a new DS_My list of pairs of an arbitrary size
 	 */
     public DS_My() {
-    	size = 5;
+    	//size = 5;
     	numElements = 0;
     	//list = new Pair[size];
     	head = null;
@@ -71,7 +71,7 @@ public class DS_My implements DataStructureADT< String, String > {
 		Node newNode = new Node(key,value);
 		
 		// Insert new node at head if empty or end of list if not
-		if (this.head == null) {
+		if (this.size() == 0) {
 			this.head = newNode;
 		} else {
 			Node last = find(key);
@@ -118,15 +118,36 @@ public class DS_My implements DataStructureADT< String, String > {
 	}
 
 	@Override
+	// Returns the value associated with the specified key
+    // get - does not remove key or decrease size
+    // return null if key is not null and is not found in data structure
+    // If key is null, throws IllegalArgumentException("null key") 
 	public String get(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		if (key == null) {
+			throw new IllegalArgumentException("null key");
+		}
+		
+		// If key is not found
+		if (!contains(key)) {
+			return null;
+		}
+		
+		// Else find node and return value
+		return find(key).value;
 	}
 
 	@Override
+    // Returns true if the key is in the data structure
+    // Returns false if key is null or not present
 	public boolean contains(String key) {
-		// TODO Auto-generated method stub
-		return false;
+		if (key == null) {
+			return false;
+		}
+		
+		if (find(key) == null) {
+			return false; // key was not found
+		}
+		return true;
 	}
 
 	@Override
@@ -147,14 +168,14 @@ public class DS_My implements DataStructureADT< String, String > {
 		return curr;
 	}
 	
-	// Return node given a key 
+	// Return node given a key, or null if not found 
 	private Node find(String K) {
 		if (K == null) {
 			throw new IllegalArgumentException("null key");
 		}
 		
 		Node curr = this.head;
-		while (curr.next != null || curr.key.equals(K)) {
+		while (!curr.key.equals(K)) {
 			curr = curr.next;
 		}
 		
