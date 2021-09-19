@@ -16,7 +16,7 @@ public class DS_My implements DataStructureADT< String, String > {
     // such a class and its members should be "private"
 	
 	// Inner class - doubly linked list defining key-value pair relationship
-	private class Node {
+	private static class Node {
 		private String key;
 		private String value;
 		private Node next;
@@ -74,7 +74,7 @@ public class DS_My implements DataStructureADT< String, String > {
 		if (this.size() == 0) {
 			this.head = newNode;
 		} else {
-			Node last = find(key);
+			Node last = find();
 			last.next = newNode;
 			newNode.prev = last;
 			
@@ -175,7 +175,7 @@ public class DS_My implements DataStructureADT< String, String > {
 		}
 		
 		Node curr = this.head;
-		while (!curr.key.equals(K)) {
+		while (curr != null && !curr.key.equals(K)) {
 			curr = curr.next;
 		}
 		

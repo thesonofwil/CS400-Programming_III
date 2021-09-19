@@ -43,6 +43,7 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     void test01_insert_one() {
         String key = "1";
         String value = "one";
+        assert (ds.size()==0);
         ds.insert(key, value);
         assert (ds.size()==1);
     }
