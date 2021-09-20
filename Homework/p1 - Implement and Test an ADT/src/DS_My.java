@@ -92,16 +92,25 @@ public class DS_My implements DataStructureADT< String, String > {
 			throw new IllegalArgumentException("null key");
 		}
 		
+		// cannot remove if list is empty
+		if (this.size() == 0) {
+			throw new IllegalStateException("list is empty");
+		}
+		
 		if (!this.contains(key)) {
 			return false;
 		}
 		
 		Node curr = find(key);
 		
-		// If deleting head, set head to next node
+		// Delete head if found in beginning
 		if (this.head.key.equals(curr.key)) {
 			this.head = this.head.next;
-			this.head.prev = null;
+			// Update previous pointer if needed 
+			if (this.size() > 1) {
+				this.head.prev = null;
+			}
+			// Node is found after
 		} else {
 			curr.prev = curr.next;
 		}

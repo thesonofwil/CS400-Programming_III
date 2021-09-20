@@ -137,7 +137,7 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     void test10_remove_null_key_throws_exception_and_size_stays_the_same() {
     	ds.insert("1", "one");
     	try {
-    		ds.remove("null");
+    		ds.remove(null);
     		fail("illegal argument exception not thrown");
     	} catch (IllegalArgumentException e) { }
     	assert (ds.size() == 1);
@@ -149,8 +149,8 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (ds.size() == 0);
     	try {
     		ds.remove("One");
-    		fail("empty exception not thrown");
-    	} catch (RuntimeException e) {}
+    		fail("illegal state exception not thrown");
+    	} catch (IllegalStateException e) {}
     	assert (ds.size() == 0);
     }
     // TODO: add more tests of your own design to ensure that you can detect implementation that fail
