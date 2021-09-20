@@ -111,8 +111,13 @@ public class DS_My implements DataStructureADT< String, String > {
 				this.head.prev = null;
 			}
 			// Node is found after
+			// Delete node by linking previous to next and next to previous
 		} else {
-			curr.prev = curr.next;
+			curr.prev.next = curr.next;
+			// If deleting tail, then stop here
+			if (curr.next != null) {
+				curr.next.prev = curr.prev;
+			}
 		}
 		
 		this.numElements--;

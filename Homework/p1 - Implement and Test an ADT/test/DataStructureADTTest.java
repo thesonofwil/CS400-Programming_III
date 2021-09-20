@@ -143,7 +143,7 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (ds.size() == 1);
     }
     
-    // Empty exception should be thrown if removing when there are no keys
+    // Exception should be thrown if removing when there are no keys
     @Test
     void test11_remove_empty_ds_throws_exception() {
     	assert (ds.size() == 0);
@@ -152,6 +152,67 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     		fail("illegal state exception not thrown");
     	} catch (IllegalStateException e) {}
     	assert (ds.size() == 0);
+    }
+    
+    @Test
+    void test12_contains_after_insert_and_remove() {
+    	assert (!ds.contains("1"));
+    	ds.insert("1", "One");
+    	assert (ds.contains("1"));
+    	ds.remove("1");
+    	assert (!ds.contains("1"));
+    }
+    
+    @Test
+    void test13_contain_on_null_key() {
+    	assert(!ds.contains(null));
+    }
+    
+    @Test
+    void test14_get_and_remove_only_work_on_keys() {
+    	ds.insert("1", "One");
+    	assert (ds.get("One") == null);
+    	assert (!ds.remove("One"));
+    	assert (ds.size() == 1);
+    }
+    
+    @Test 
+    void test15_insert_multiple_remove_head() { 
+    	ds.insert("1", "One");
+    	ds.insert("2", "Two");
+    	ds.insert("3", "Three");
+    	assert (ds.size() == 3);
+    	assert (ds.remove("1"));
+    	assert (ds.size() == 2);
+    	assert (!ds.contains("1"));
+    	assert (ds.contains("2"));
+    	assert (ds.contains("3"));
+    }
+    
+    @Test
+    void test16_insert_multiple_remove_middle() {
+    	ds.insert("1", "One");
+    	ds.insert("2", "Two");
+    	ds.insert("3", "Three");
+    	assert (ds.size() == 3);
+    	assert (ds.remove("2"));
+    	assert (ds.size() == 2);
+    	assert (ds.contains("1"));
+    	assert (!ds.contains("2"));
+    	assert (ds.contains("3"));
+    }
+    
+    @Test
+    void test17_insert_multiple_remove_end() {
+    	ds.insert("1", "One");
+    	ds.insert("2", "Two");
+    	ds.insert("3", "Three");
+    	assert (ds.size() == 3);
+    	assert (ds.remove("3"));
+    	assert (ds.size() == 2);
+    	assert (ds.contains("1"));
+    	assert (ds.contains("2"));
+    	assert (!ds.contains("3"));
     }
     // TODO: add more tests of your own design to ensure that you can detect implementation that fail
     
