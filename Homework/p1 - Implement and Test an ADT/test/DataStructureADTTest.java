@@ -169,6 +169,7 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	ds.insert("1", "One");
     	assert (ds.get("One") == null);
     	assert (!ds.remove("One"));
+    	assert (ds.get("1").equals("One"));
     	assert (ds.size() == 1);
     }
     
@@ -209,6 +210,35 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (ds.contains("1"));
     	assert (ds.contains("2"));
     	assert (!ds.contains("3"));
+    }
+    
+    @Test
+    void test18_reinsert_after_removing() {
+    	ds.insert("1", "One");
+    	ds.remove("1");
+    	assert (ds.size() == 0);
+    	assert (!ds.contains("1"));
+    	ds.insert("1", "Two"); // different value
+    	assert (ds.contains("1"));
+    	assert (ds.get("1").equals("Two"));
+    	assert (ds.size() == 1);
+    }
+    
+    @Test
+    void test19_insert_remove_lots() {
+    	String num;
+    	for (int i = 0; i < 500; i++) {
+    		num = String.valueOf(i);
+    		ds.insert(num, "value");
+    	}
+    	
+    	assert (ds.size() == 500);
+    	for (int i = 0; i < 500; i++) {
+    		num = String.valueOf(i);
+    		ds.remove(num);
+    	}
+    	
+    	assert (ds.size() == 0);
     }
     
     // Tip: consider different numbers of inserts and removes and how different combinations of insert and removes
