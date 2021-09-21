@@ -73,6 +73,7 @@ public class DS_My implements DataStructureADT< String, String > {
 	// If key is found, Removes the key from the data structure and decreases size
     // If key is null, throws IllegalArgumentException("null key") without decreasing size
     // If key is not found, returns false.
+	// If DS_My is empty, throw an IllegalStateException
 	public boolean remove(String key) {
 		if (key == null) {
 			throw new IllegalArgumentException("null key");
@@ -178,6 +179,7 @@ public class DS_My implements DataStructureADT< String, String > {
 			throw new IllegalArgumentException("null key");
 		}
 		
+		// Loop through nodes until node with key matches K
 		Node curr = this.head;
 		while (curr != null && !curr.key.equals(K)) {
 			curr = curr.next;
