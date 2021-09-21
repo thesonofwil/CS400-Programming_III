@@ -43,7 +43,6 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     void test01_insert_one() {
         String key = "1";
         String value = "one";
-        assert (ds.size()==0);
         ds.insert(key, value);
         assert (ds.size()==1);
     }
@@ -83,9 +82,6 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
         if (ds.get(key)!=null)
             fail("get("+key+ ") returned " + ds.get(key) + " which should have been removed");
     }
-
-    
-    // TODO: add tests 05 - 07 as described in assignment
     
     @Test
     void test05_get_after_inserts() {
@@ -214,8 +210,6 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (ds.contains("2"));
     	assert (!ds.contains("3"));
     }
-    // TODO: add more tests of your own design to ensure that you can detect implementation that fail
     
     // Tip: consider different numbers of inserts and removes and how different combinations of insert and removes
-
 }

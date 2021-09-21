@@ -1,19 +1,12 @@
-// TODO: Add file header here
-
-
-
-
-// TODO: Add class header here
 /**
- * 
  * @author Wilson Tjoeng
+ * tjoeng@wisc.edu
+ * CS400 010
+ * Due: 9/30/21 
  *
+ * Implementation of a DS using a doubly linked list where each node holds a key-value pair.
  */
 public class DS_My implements DataStructureADT< String, String > {
-
-    // TODO may wish to define an inner class 
-    // for storing key and value as a pair
-    // such a class and its members should be "private"
 	
 	// Inner class - doubly linked list defining key-value pair relationship
 	private static class Node {
@@ -22,7 +15,12 @@ public class DS_My implements DataStructureADT< String, String > {
 		private Node next;
 		private Node prev;
 		
-		// Inner constructor 
+		/**
+		 * Node constructor
+		 * 
+		 * @param K key
+		 * @param V value
+		 */
 		private Node(String K, String V) {
 			this.key = K;
 			this.value = V;
@@ -31,30 +29,24 @@ public class DS_My implements DataStructureADT< String, String > {
 		}
 	}
     // Private Fields of the class
-    // TODO create field(s) here to store data pairs
-	
-	//private DS_My.Pair[] list; // Array representation of pairs
 	private int numElements; // number of elements in list
-	//private int size; // size of list 
 	private Node head; // start of linked list
+	
 	/**
-	 * Construct a new DS_My list of pairs of an arbitrary size
+	 * Construct a new DS_My list with a null head node.
 	 */
     public DS_My() {
-    	//size = 5;
     	numElements = 0;
-    	//list = new Pair[size];
     	head = null;
     }
 
 	@Override
-	// Insert a new Pair at end of list 
+	// Insert a new Pair at end of list
 	// Add the key,value pair to the data structure and increases size.
     // If key is null, throws IllegalArgumentException("null key");
     // If key is already in data structure, throws RuntimeException("duplicate key");
     // can accept and insert null values
 	public void insert(String key, String value) {
-		// TODO Auto-generated method stub
 		if (this.contains(key)) {
 			throw new RuntimeException("duplicate key");
 		}
@@ -63,11 +55,6 @@ public class DS_My implements DataStructureADT< String, String > {
 			throw new IllegalArgumentException("null key");
 		}
 		
-//		if (numElements == size) {
-//			grow();
-//		}
-		
-		//Pair pair = new Pair(key, value);
 		Node newNode = new Node(key,value);
 		
 		// Insert new node at head if empty or end of list if not
@@ -79,7 +66,6 @@ public class DS_My implements DataStructureADT< String, String > {
 			newNode.prev = last;
 			
 		}
-		//this.list[numElements] = pair;
 		this.numElements++;
 	}
 
@@ -121,13 +107,6 @@ public class DS_My implements DataStructureADT< String, String > {
 		}
 		
 		this.numElements--;
-//		int index = find(key);
-//		if (index >= 0) {
-//			this.list[index] = null;
-//			this.numElements--;
-			
-			// After removing, need to re-organize list
-//		}
 		return true;
 	}
 
@@ -170,7 +149,13 @@ public class DS_My implements DataStructureADT< String, String > {
 		return this.numElements;
 	}
     
-	// Return the last node in list 
+	// ------ Private Helper Methods ------
+	
+	/**
+	 * Finds the last node in a list
+	 * 
+	 * @return the last node, or null if empty
+	 */
 	private Node find() { 
 		
 		// Loop through nodes starting at head
@@ -182,7 +167,12 @@ public class DS_My implements DataStructureADT< String, String > {
 		return curr;
 	}
 	
-	// Return node given a key, or null if not found 
+	/**
+	 * Finds the node containing the specified key
+	 * 
+	 * @param K the string key value to search for in the list
+	 * @return the node containing K
+	 */
 	private Node find(String K) {
 		if (K == null) {
 			throw new IllegalArgumentException("null key");
@@ -196,33 +186,3 @@ public class DS_My implements DataStructureADT< String, String > {
 		return curr;
 	}
 }
-//	// Create a larger list if at capacity
-//	private void grow() {
-//		size *= 2;
-//		
-//		DS_My.Pair[] tmp = new Pair[size];
-//		for (int i = 0; i < size; i++) {
-//			tmp[i] = this.list[i];
-//		}
-//		this.list = tmp;
-//	}
-//	
-//	/**
-//	 * Find the index of a key in DS_My list
-//	 * @param K The key to search for
-//	 * @return index of key. -1 if not found
-//	 */
-//	private int find(String K) {
-//		int index = -1;
-//		
-//		for (int i = 0; i < numElements; i++) {
-//			if (this.list[i].key.equals(K)) {
-//				index = i;
-//				break;
-//			}
-//		}
-//		return index;
-//	}
-//
-//}                            
-    
