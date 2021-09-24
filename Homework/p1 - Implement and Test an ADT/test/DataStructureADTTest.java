@@ -139,14 +139,11 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (ds.size() == 1);
     }
     
-    // Exception should be thrown if removing when there are no keys
     @Test
-    void test11_remove_empty_ds_throws_exception() {
+    void test11_remove_empty_ds_returns_false() {
     	assert (ds.size() == 0);
-    	try {
-    		ds.remove("One");
-    		fail("illegal state exception not thrown");
-    	} catch (IllegalStateException e) {}
+    	assert (!ds.remove("One"));
+    	assert (!ds.remove("Two"));
     	assert (ds.size() == 0);
     }
     
@@ -174,7 +171,7 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     }
     
     @Test 
-    void test15_insert_multiple_remove_head() { 
+    void test15_insert_multiple_remove_beginning() { 
     	ds.insert("1", "One");
     	ds.insert("2", "Two");
     	ds.insert("3", "Three");
@@ -222,24 +219,31 @@ abstract class DataStructureADTTest<T extends DataStructureADT<String,String>> {
     	assert (ds.contains("1"));
     	assert (ds.get("1").equals("Two"));
     	assert (ds.size() == 1);
+    	try { 
+            ds.insert("1", "Three"); 
+            fail("duplicate exception not thrown");
+        }
+        catch (RuntimeException re) { }
     }
     
     @Test
     void test19_insert_remove_lots() {
     	String num;
-    	for (int i = 0; i < 500; i++) {
+    	int upperBound = 1000;
+    	
+    	for (int i = 0; i < upperBound; i++) {
     		num = String.valueOf(i);
-    		ds.insert(num, "value");
+    		ds.insert(num, "value" + i);
     	}
     	
-    	assert (ds.size() == 500);
-    	for (int i = 0; i < 500; i++) {
+    	assert (ds.size() == upperBound);
+    	for (int i = 0; i < upperBound; i++) {
     		num = String.valueOf(i);
-    		ds.remove(num);
+    		assert (ds.get(num).equals("value" + i));
+    		assert (ds.remove(num));
+    		assert (ds.size() == upperBound - (i + 1));
     	}
-    	
-    	assert (ds.size() == 0);
     }
-    
+   
     // Tip: consider different numbers of inserts and removes and how different combinations of insert and removes
 }

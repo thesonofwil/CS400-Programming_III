@@ -73,18 +73,14 @@ public class DS_My implements DataStructureADT< String, String > {
 	// If key is found, Removes the key from the data structure and decreases size
     // If key is null, throws IllegalArgumentException("null key") without decreasing size
     // If key is not found, returns false.
-	// If DS_My is empty, throw an IllegalStateException
+	// If DS_My is empty, return false
 	public boolean remove(String key) {
 		if (key == null) {
 			throw new IllegalArgumentException("null key");
 		}
 		
-		// cannot remove if list is empty
-		if (this.size() == 0) {
-			throw new IllegalStateException("list is empty");
-		}
 		
-		if (!this.contains(key)) {
+		if (!this.contains(key) || this.size() == 0) {
 			return false;
 		}
 		
@@ -134,13 +130,10 @@ public class DS_My implements DataStructureADT< String, String > {
     // Returns true if the key is in the data structure
     // Returns false if key is null or not present
 	public boolean contains(String key) {
-		if (key == null) {
+		if (key == null || find(key) == null) {
 			return false;
 		}
-		
-		if (find(key) == null) {
-			return false; // key was not found
-		}
+
 		return true;
 	}
 
@@ -150,7 +143,7 @@ public class DS_My implements DataStructureADT< String, String > {
 		return this.numElements;
 	}
     
-	// ------ Private Helper Methods ------
+	// ------ Private Helper Methods ------ \\
 	
 	/**
 	 * Finds the last node in a list
