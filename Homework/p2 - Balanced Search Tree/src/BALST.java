@@ -1,5 +1,14 @@
 import java.util.List;
 
+/**
+ * @author Wilson Tjoeng
+ * tjoeng@wisc.edu
+ * CS400 010
+ * Due: 10/15/21 
+ *
+ * Implementation of a balanced search tree using a red-black implementation.
+ */
+
 // DO IMPLEMENT A RED BLACK TREE IN THIS CLASS
 
 /**
@@ -14,15 +23,75 @@ import java.util.List;
  * @param <K> A Comparable type to be used as a key to an associated value.  
  * @param <V> A value associated with the given key.
  */
-public class BALST<K extends Comparable<K>, V> implements STADT<K, V> {
+public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     
+    // Private fields of BST
+    private BSTNode<K, V> root;
+    private int heightTree; 
+    private int numKeys;
+	
+	/**
+	 * Inner private node class modified from BSTNode.java.
+	 *  
+	 * @author Wilson Tjoeng
+	 *
+	 * @param <K> A unique key
+	 * @param <V> The key's associated value
+	 */
+	private class BSTNode<K,V> {
+	    
+	    K key;
+	    V value;
+	    BSTNode<K,V> left;
+	    BSTNode<K,V> right;
+	    BSTNode<K, V> parent;
+	    String color;
+	    int balanceFactor;
+	    int height;
+
+	    /**
+	     * Constructor given a node's children 
+	     * 
+	     * @param key
+	     * @param value
+	     * @param leftChild
+	     * @param rightChild
+	     */
+	    BSTNode(K key, V value, BSTNode<K,V>  leftChild, BSTNode<K,V> rightChild, BSTNode<K,V> parent) {
+	        this.key = key; 
+	        this.value = value;
+	        this.left = leftChild;
+	        this.right = rightChild;
+	        this.parent = parent;
+	        this.height = 0;
+	        this.balanceFactor = 0;
+	        this.color = null; // Color during insert
+	    }
+	    
+	    // Constructs a node with no children
+	    BSTNode(K key, V value) { this(key,value,null,null,null); }
+	}
+	
+	/**
+	 * Construct an empty BST with no root
+	 */
+	public BALST() {
+		root = null;
+		heightTree = 0;
+		numKeys = 0;
+	}
+	
     /**
      * Returns the key that is in the root node of this ST.
      * If root is null, returns null.
      * @return key found at root node, or null
      */
     public K getKeyAtRoot() {
-        return null;
+        if (this.root == null) {
+        	return null;
+        }
+        
+        return this.root.key;
     }
     
     /**
@@ -137,9 +206,69 @@ public class BALST<K extends Comparable<K>, V> implements STADT<K, V> {
      * Do not increase the num of keys in the structure, if key,value pair is not added.
      */
     public void insert(K key, V value) throws IllegalNullKeyException, DuplicateKeyException {
-        return;
+        if (this.contains(key)) {
+        	throw new DuplicateKeyException("Cannot insert duplicate key");
+        }
+        
+        if (key == null) {
+        	throw new IllegalNullKeyException("");
+        }
+        
+        root = insert(root, key, value, null);
+        
+        // If just inserted root 
+        if (numKeys() == 0) {
+        	root.color = "black";
+        }
+        
+        // If not empty, then
+        // 1. Use BST insert algorithm to add key
+        // 2. Color the new node red
+        // 3. Restore RB tree properties if necessary
+        
+        else {
+        	root.color = "red";
+        }
     }
     
+    /**
+     
+     */
+    
+    /**
+     * Insert node following BST recursion
+     * 
+     * @param node node to start traversal from
+     * @param key key to insert
+     * @param value value of key 
+     * @param parent the parent node of the current node
+     * @return the new node that was inserted
+     * @throws DuplicateKeyException if key already exists
+     */
+    private BSTNode<K, V> insert(BSTNode<K, V> node, K key, V value, BSTNode<K, V> parent) throws DuplicateKeyException {
+    	
+    	// Base case - create new node and establish pointer to parent
+    	if (node == null) {
+        	return new BSTNode<K, V>(key, value, null, null, parent);
+        }
+    	
+    	if (node.key.equals(key)) {
+    		throw new DuplicateKeyException("Cannot insert duplicate key");
+    	}
+    	
+    	// Add key to left subtree
+    	if (key.compareTo(node.key) < 0) {
+    		node.left = insert(node.left, key, value, node);
+    	} 
+    	
+    	// Add key to right subtree
+    	else {
+    		node.right = (insert(node.right, key, value, node));
+    	}
+    	
+		return node;
+
+    }
     
 
     /** 
@@ -176,7 +305,7 @@ public class BALST<K extends Comparable<K>, V> implements STADT<K, V> {
      *  Returns the number of key,value pairs in the data structure
      */
     public int numKeys() {
-        return 0;
+        return this.numKeys;
     }
     
     
@@ -229,6 +358,15 @@ public class BALST<K extends Comparable<K>, V> implements STADT<K, V> {
      */
     public void print() {
         System.out.println("not yet implemented");
+    }
+    
+    
+    /**
+     * Red property - the children of a red node are black
+     * @return
+     */
+    private boolean redPropertyMaintained() {
+    	
     }
     
 } // copyrighted material, students do not have permission to post on public sites
