@@ -45,9 +45,9 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	    BSTNode<K,V> left;
 	    BSTNode<K,V> right;
 	    BSTNode<K, V> parent;
-	    String color;
-	    int balanceFactor;
-	    int height;
+	    char color;
+	    int balanceFactor; // may not need this
+	    int height; // may not need this
 
 	    /**
 	     * Constructor given a node's children 
@@ -65,7 +65,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	        this.parent = parent;
 	        this.height = 0;
 	        this.balanceFactor = 0;
-	        this.color = null; // Color during insert
+	        // Color during insert
 	    }
 	    
 	    // Constructs a node with no children
@@ -218,7 +218,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         
         // If just inserted root 
         if (numKeys() == 0) {
-        	root.color = "black";
+        	root.color = 'b';
         }
         
         // If not empty, then
@@ -227,8 +227,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         // 3. Restore RB tree properties if necessary
         
         else {
-        	root.color = "red";
+        	root.color = 'r';
         }
+        
+        numKeys++;
     }
     
     /**
@@ -360,6 +362,119 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         System.out.println("not yet implemented");
     }
     
+    
+    /**
+     * Returns the sibling of a parent node
+     * 
+     * @param P the parent of the node of interest
+     * @param G the grandparent of the node of interest
+     * @return
+     */
+    private BSTNode<K, V> getParentSibling(BSTNode<K, V> P, BSTNode<K, V> G) {
+    	if (G.left.equals(P)) {
+    		return G.right;
+    	} else {
+    		return G.left;
+    	}
+    }
+    
+    /**
+     * Checks if the sibling of a child's parent is null. Used for TNR
+     * @param n the child node
+     * @return true if the parent of the child node has no sibling
+     */
+    private boolean parentSiblingIsNull(BSTNode<K, V> n) {
+    	BSTNode<K, V> parent = n.parent;
+    	
+    	// n is already the root
+    	if (parent == null) {
+    		return false;
+    	}
+    	
+    	BSTNode<K, V> grandparent = parent.parent;
+    	
+    	// Parent is the root, so no sibling
+    	if (grandparent == null) {
+    		return false;
+    	}
+    	
+    	return getParentSibling(parent, grandparent) == null;
+    }
+    
+    /**
+     * Checks if the sibling of a child's parent is black. Used for TNR
+     * @param n the child node
+     * @return true if the parent of the child node has a black sibling
+     */
+    private boolean parentSiblingIsBlack(BSTNode<K, V> n) {
+    	BSTNode<K, V> parent = n.parent;
+    	
+    	// n is already the root
+    	if (parent == null) {
+    		return false;
+    	}
+    	
+    	BSTNode<K, V> grandparent = parent.parent;
+    	
+    	// Parent is the root, so no sibling
+    	if (grandparent == null) {
+    		return false;
+    	}
+    	
+    	return getParentSibling(parent, grandparent).color == 'b';
+    }
+    
+    /**
+     * Checks if the sibling of a child's parent is red. Used for recoloring
+     * @param n the child node
+     * @return true if the parent of the child has a red sibling
+     */
+    private boolean parentSiblingIsRed(BSTNode<K, V> n) {
+    	BSTNode<K, V> parent = n.parent;
+    	
+    	// n is already the root
+    	if (parent == null) {
+    		return false;
+    	}
+    	
+    	BSTNode<K, V> grandparent = parent.parent;
+    	
+    	// Parent is the root, so no sibling
+    	if (grandparent == null) {
+    		return false;
+    	}
+    	
+    	return getParentSibling(parent, grandparent).color == 'r';
+    }
+    
+    /**
+     * Recolor nodes which occurs after inserting if P's sibling is red.
+     * Structure remains the same. 
+     *  
+     * 1. Set G to red, unless G is already the root which is black
+     * 2. Set P and S to black
+     * 3. Set K as red
+     * 
+     * @param K the leaf node that was inserted
+     */
+    private void recolor(BSTNode<K, V> K) {
+    	BSTNode<K, V> P = K.parent;
+    	BSTNode<K, V> G = P.parent;
+    	BSTNode<K, V> S = getParentSibling(P, G);
+    	
+    	if (!this.root.equals(G)) {
+    		G.color = 'r';
+    	}
+    	P.color = 'b';
+    	S.color = 'b';
+    	K.color = 'r';
+    	
+    	maintainRootProperty(); // If G happened to be the root
+    }
+    
+    private void maintainRootProperty() {
+    	this.root.color = 'b';
+    }
     
     /**
      * Red property - the children of a red node are black
