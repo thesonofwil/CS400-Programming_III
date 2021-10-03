@@ -226,8 +226,15 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         // 2. Color the new node red
         // 3. Restore RB tree properties if necessary
         
+        // Maybe this needs to be put in insert helper method to cascade restoration? 
         else {
         	root.color = 'r';
+        	
+        	// Red property violated if red child has a red parent.
+        	// Red parents must have black children
+        	if (root.parent.color == 'r') { 
+        		root = maintainRedProperty(root);
+        	}
         }
         
         numKeys++;
@@ -379,48 +386,48 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     
     /**
      * Checks if the sibling of a child's parent is null. Used for TNR
-     * @param n the child node
+     * @param K the child node
      * @return true if the parent of the child node has no sibling
      */
-    private boolean parentSiblingIsNull(BSTNode<K, V> n) {
-    	BSTNode<K, V> parent = n.parent;
+    private boolean parentSiblingIsNull(BSTNode<K, V> K) {
+    	BSTNode<K, V> P = K.parent;
     	
     	// n is already the root
-    	if (parent == null) {
+    	if (P == null) {
     		return false;
     	}
     	
-    	BSTNode<K, V> grandparent = parent.parent;
+    	BSTNode<K, V> G = P.parent;
     	
     	// Parent is the root, so no sibling
-    	if (grandparent == null) {
+    	if (G == null) {
     		return false;
     	}
     	
-    	return getParentSibling(parent, grandparent) == null;
+    	return getParentSibling(P, G) == null;
     }
     
     /**
      * Checks if the sibling of a child's parent is black. Used for TNR
-     * @param n the child node
+     * @param K the child node
      * @return true if the parent of the child node has a black sibling
      */
-    private boolean parentSiblingIsBlack(BSTNode<K, V> n) {
-    	BSTNode<K, V> parent = n.parent;
+    private boolean parentSiblingIsBlack(BSTNode<K, V> K) {
+    	BSTNode<K, V> P = K.parent;
     	
     	// n is already the root
-    	if (parent == null) {
+    	if (P == null) {
     		return false;
     	}
     	
-    	BSTNode<K, V> grandparent = parent.parent;
+    	BSTNode<K, V> G = P.parent;
     	
     	// Parent is the root, so no sibling
-    	if (grandparent == null) {
+    	if (G == null) {
     		return false;
     	}
     	
-    	return getParentSibling(parent, grandparent).color == 'b';
+    	return getParentSibling(P, G).color == 'b';
     }
     
     /**
@@ -446,7 +453,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	return getParentSibling(parent, grandparent).color == 'r';
     }
     
-    // There's 4 cases to consider when doing TNR
+    // There's 4 cases to consider when doing tri-node restructure
     
     /**
      *  Case 1: P is the left-child of G and K is the left child of P. Do a
@@ -461,7 +468,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param G the grandparent node to rotate on
      * @return the new root which is P
      */
-    private BSTNode<K, V> rotateRight(Node<K, V> G) {
+    private BSTNode<K, V> rotateRight(BSTNode<K, V> G) {
     	BSTNode<K, V> P = G.left;
     	BSTNode<K, V> K = P.left;
     	
@@ -563,14 +570,19 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	BSTNode<K, V> K = P.right;
     	
     	// Rotate and update parent
-    	P.right = K.left;
-    	K.left.parent = P;
-    	G.left = K.right;
-    	K.right.parent = G;
-    	K.left = P;
+    	P.left = K.right;
+    	K.right.parent = P;
+    	G.right = K.left;
+    	K.left.parent = G;
+    	K.right = P;
     	P.parent = K;
-    	K.right = G;
+    	K.left = G;
     	G.parent = K;
+    	
+    	// Recolor
+    	K.color = 'b';
+    	P.color = 'r';
+    	G.color = 'r';
     	
     	return K;
     }
@@ -603,6 +615,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	if (!this.root.equals(G)) {
     		G.color = 'r';
     	}
+    	
     	P.color = 'b';
     	S.color = 'b';
     	K.color = 'r';
@@ -615,11 +628,36 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     }
     
     /**
-     * Red property - the children of a red node are black
+     * After insert or delete, check if red property is violated and restore if needed
+     * Red property - red nodes must have black children. New leaves are added as black
+     * 
+     * @precondition K is a red node with a red parent
      * @return
      */
-    private boolean redPropertyMaintained() {
+    private BSTNode<K, V> maintainRedProperty(BSTNode<K, V> K) {
     	
+    	BSTNode<K, V> n = null;
+    	
+    	// Recolor if K's parent has a red sibling
+    	if (parentSiblingIsRed(K)) {
+    		n = recolor(K);
+    	} else if (parentSiblingIsNull(K) || parentSiblingIsBlack(K)) {
+    		BSTNode<K, V> P = K.parent;
+    		BSTNode<K, V> G = P.parent;
+    		
+    		// TNR depending on structures of K, P, and G
+    		if (G.left.equals(P) && P.left.equals(K)) {
+    			n = rotateRight(K);
+    		} else if (G.right.equals(P) && P.right.equals(K)) {
+    			n = rotateRight(K);
+    		} else if (G.left.equals(P) && P.right.equals(K)) {
+    			n = rotateLeftRight(K);
+    		} else if (G.right.equals(P) && P.left.equals(K)) {
+    			n = rotateRightLeft(K);
+    		}
+    	}
+    	
+    	return n;
     }
     
 } // copyrighted material, students do not have permission to post on public sites
