@@ -269,7 +269,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	}
     	
 		return node;
-
     }
     
 
@@ -447,17 +446,156 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	return getParentSibling(parent, grandparent).color == 'r';
     }
     
+    // There's 4 cases to consider when doing TNR
+    
+    /**
+     *  Case 1: P is the left-child of G and K is the left child of P. Do a
+     *  right rotate on the root similar to AVL trees. 
+     *  
+     *  	G              P
+     * 	   / \            / \
+     * 	  P   S    ->    K   G
+     *   /   / \        	/ \
+     *  K	         	       S 					 
+     *  
+     * @param G the grandparent node to rotate on
+     * @return the new root which is P
+     */
+    private BSTNode<K, V> rotateRight(Node<K, V> G) {
+    	BSTNode<K, V> P = G.left;
+    	BSTNode<K, V> K = P.left;
+    	
+    	// Rotate and update parent
+    	G.left = P.right;
+    	P.right.parent = G;
+    	P.right = G;
+    	G.parent = P;
+    	    	
+    	// Recolor 
+    	P.color = 'b';
+    	K.color = 'r';
+    	G.color = 'r';
+    	
+    	return P;
+    }
+    
+    /**
+     *  Case 2: P is the right-child of G and K is the right child of P. Do a
+     *  left rotate on the root similar to AVL trees. 
+     *  
+     *  	G              P
+     * 	   / \            / \
+     * 	  S   P    ->    G   K
+     *   	 / \        / \
+     *  	    K      S 					 
+     *  
+     * @param G the grandparent node to rotate on
+     * @return the new root which is P
+     */
+    private BSTNode<K, V> rotateLeft(BSTNode<K, V> G) {
+    	BSTNode<K, V> P = G.right;
+    	BSTNode<K, V> K = P.right;
+    	
+    	// Rotate and update parent
+    	G.right = P.left;
+    	P.left.parent = G;
+    	P.left = G;
+    	G.parent = P;
+    	    	
+    	// Recolor 
+    	P.color = 'b';
+    	K.color = 'r';
+    	G.color = 'r';
+    	
+    	return P;
+    }
+    
+    /**
+     *  Case 3: P is the left-child of G and K is the right child of P. Do a
+     *  left-right rotate on the root. 
+     *  
+     *  	G              K
+     * 	   / \            / \
+     * 	  P   S    ->    P   G
+     *   / \                / \
+     *      K                  S 					 
+     *  
+     * @param G the grandparent node to rotate on
+     * @return the new root which is P
+     */
+    private BSTNode<K, V> rotateLeftRight(BSTNode<K, V> G) {
+    	BSTNode<K, V> P = G.left;
+    	BSTNode<K, V> K = P.right;
+    	
+    	// Rotate and update parent
+    	P.right = K.left;
+    	K.left.parent = P;
+    	G.left = K.right;
+    	K.right.parent = G;
+    	K.left = P;
+    	P.parent = K;
+    	K.right = G;
+    	G.parent = K;
+    	
+    	// Recolor
+    	K.color = 'b';
+    	P.color = 'r';
+    	G.color = 'r';
+    	
+    	return K;
+    }
+    
+    /**
+     *  Case 4: P is the right-child of G and K is the left child of P. Do a
+     *  right-left rotate on the root. 
+     *  
+     *  	G              K
+     * 	   / \            / \
+     * 	  S   P    ->    G   P
+     *       / \        / \
+     *      K          S 					 
+     *  
+     * @param G the grandparent node to rotate on
+     * @return the new root which is P
+     */
+    private BSTNode<K, V> rotateRightLeft(BSTNode<K, V> G) {
+    	BSTNode<K, V> P = G.left;
+    	BSTNode<K, V> K = P.right;
+    	
+    	// Rotate and update parent
+    	P.right = K.left;
+    	K.left.parent = P;
+    	G.left = K.right;
+    	K.right.parent = G;
+    	K.left = P;
+    	P.parent = K;
+    	K.right = G;
+    	G.parent = K;
+    	
+    	return K;
+    }
+    
     /**
      * Recolor nodes which occurs after inserting if P's sibling is red.
-     * Structure remains the same. 
+     * Structure remains the same and generally will look like below. 
      *  
      * 1. Set G to red, unless G is already the root which is black
      * 2. Set P and S to black
      * 3. Set K as red
      * 
+     * [] - red
+     *  O - black 
+     * 
+     * 		[]
+     * 	   /  \
+     *    O    O
+     *        /
+     *      []
+     * 
+     * 
      * @param K the leaf node that was inserted
      */
-    private void recolor(BSTNode<K, V> K) {
+    private BSTNode<K,V> recolor(BSTNode<K, V> K) {
     	BSTNode<K, V> P = K.parent;
     	BSTNode<K, V> G = P.parent;
     	BSTNode<K, V> S = getParentSibling(P, G);
@@ -469,7 +607,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	S.color = 'b';
     	K.color = 'r';
     	
-    	maintainRootProperty(); // If G happened to be the root
+    	return G; // If G happened to be the root
     }
     
     private void maintainRootProperty() {
