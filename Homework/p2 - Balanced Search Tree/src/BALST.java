@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -157,7 +158,28 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return List of Keys in-order
      */
     public List<K> getInOrderTraversal() {
-        return null;
+       List<K> list = new ArrayList<K>();
+       
+       inOrderTraverse(list, this.root);
+       
+       return list;
+    }
+    
+    /**
+     * In-order traversal recursive helper function.
+     * 
+     * @param list list to store keys in 
+     * @param root the root node of the tree
+     */
+    private void inOrderTraverse(List<K> list, BSTNode<K, V> root) {
+    	// Base case
+    	if (root == null) {
+    		return;
+    	}
+    	
+    	inOrderTraverse(list, root.left); // Traverse left subtree
+    	list.add(root.key);
+    	inOrderTraverse(list, root.right); // Traverse right subtree
     }
     
     /**
@@ -169,9 +191,30 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return List of Keys in pre-order
      */
     public List<K> getPreOrderTraversal() {
-        return null;
+    	List<K> list = new ArrayList<K>();
+        
+        preOrderTraverse(list, this.root);
+        
+        return list;
     }
-
+    
+    /**
+     * Pre-order traversal recursive helper function.
+     * 
+     * @param list list to store keys in 
+     * @param root the root node of the tree
+     */
+    private void preOrderTraverse(List<K> list, BSTNode<K, V> root) {
+    	// Base case
+    	if (root == null) {
+    		return;
+    	}
+    	
+    	list.add(root.key);
+    	inOrderTraverse(list, root.left); // Traverse left subtree
+    	inOrderTraverse(list, root.right); // Traverse right subtree
+    }
+    
     /**
      * Returns the keys of the data structure in post-order traversal order.
      * In the case of binary search trees, the order is: L R V 
@@ -181,7 +224,28 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return List of Keys in post-order
      */
     public List<K> getPostOrderTraversal() {
-        return null;
+    	List<K> list = new ArrayList<K>();
+        
+        preOrderTraverse(list, this.root);
+        
+        return list;    
+    }
+    
+    /**
+     * Post-order traversal recursive helper function.
+     * 
+     * @param list list to store keys in 
+     * @param root the root node of the tree
+     */
+    private void postOrderTraverse(List<K> list, BSTNode<K, V> root) {
+    	// Base case
+    	if (root == null) {
+    		return;
+    	}
+    	
+    	inOrderTraverse(list, root.left); // Traverse left subtree
+    	inOrderTraverse(list, root.right); // Traverse right subtree
+    	list.add(root.key);
     }
 
     /**
