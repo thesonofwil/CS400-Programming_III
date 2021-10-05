@@ -58,7 +58,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	     * @param leftChild
 	     * @param rightChild
 	     */
-	    BSTNode(K key, V value, BSTNode<K,V>  leftChild, BSTNode<K,V> rightChild, BSTNode<K,V> parent) {
+	    BSTNode(K key, V value, BSTNode<K,V>  leftChild, BSTNode<K,V> rightChild, BSTNode<K,V> parent, char color) {
 	        this.key = key; 
 	        this.value = value;
 	        this.left = leftChild;
@@ -66,11 +66,11 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	        this.parent = parent;
 	        this.height = 0;
 	        this.balanceFactor = 0;
-	        // Color during insert
+	        this.color = color;
 	    }
 	    
 	    // Constructs a node with no children
-	    BSTNode(K key, V value) { this(key,value,null,null,null); }
+	    BSTNode(K key, V value) { this(key,value,null,null,null,'b'); }
 	}
 	
 	/**
@@ -107,7 +107,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @throws KeyNotFoundException if key is not found in this RBT
      */
     public K getKeyOfLeftChildOf(K key) throws IllegalNullKeyException, KeyNotFoundException {
-         return null;
+    	BSTNode<K, V> parent = find(key);
+        return parent.left.key;
     }
     
     /**
@@ -122,7 +123,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @throws KeyNotFoundException if key is not found in this RBT
      */
     public K getKeyOfRightChildOf(K key) throws IllegalNullKeyException, KeyNotFoundException {
-         return null;
+         BSTNode<K, V> parent = find(key);
+         return parent.right.key;
     }
     
 
@@ -291,15 +293,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         // 3. Restore RB tree properties if necessary
         
         // Maybe this needs to be put in insert helper method to cascade restoration? 
-        else {
-        	root.color = 'r';
-        	
-        	// Red property violated if red child has a red parent.
-        	// Red parents must have black children
-        	if (root.parent.color == 'r') { 
-        		root = maintainRedProperty(root);
-        	}
-        }
+//        else {
+//        	
+//        	// Red property violated if red child has a red parent.
+//        	// Red parents must have black children
+//        	if (root.parent.color == 'r') { // This is throwing null pointer exception because root has no parent
+//        		root = maintainRedProperty(root);
+//        	}
+//        }
         
         numKeys++;
     }
@@ -320,27 +321,31 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      */
     private BSTNode<K, V> insert(BSTNode<K, V> node, K key, V value, BSTNode<K, V> parent) throws DuplicateKeyException {
     	
-    	// Base case - create new node and establish pointer to parent
+    	// Base case - create new red node and establish pointer to parent
     	if (node == null) {
-        	return new BSTNode<K, V>(key, value, null, null, parent);
+        	return new BSTNode<K, V>(key, value, null, null, parent,'r');
         }
     	
     	if (node.key.equals(key)) {
     		throw new DuplicateKeyException("Cannot insert duplicate key");
     	}
     	
+    	int cmp = key.compareTo(node.key);
+    	
     	// Add key to left subtree
-    	if (key.compareTo(node.key) < 0) {
+    	if (cmp < 0) {
     		node.left = insert(node.left, key, value, node);
     	} 
     	
     	// Add key to right subtree
-    	else {
-    		node.right = (insert(node.right, key, value, node));
+    	else if (cmp > 0) {
+    		node.right = insert(node.right, key, value, node);
     	}
     	
-		return node;
+    	// Not balancing for some reason
+		return maintainRedProperty(node);
     }
+    
     
 
     /** 
@@ -429,9 +434,62 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 
      */
     public void print() {
-        System.out.println("not yet implemented");
+//        System.out.println("not yet implemented");
+//        List<K> list = getInOrderTraversal();
+//        
+//        int space = 0;
+//        int count = 10;
+//        
+//        for (int i = numKeys() - 1; i > 0; i--) { 
+//	        for (int j = count; j < space; j++) {
+//	        	System.out.print(" ");
+//	        }
+//	        System.out.print(list.get(i));
+//        }
+    	int space = 0;
+    	int count = 10;
+    	
+    	printHelper(this.root, space, count);
+    	
     }
     
+    private void printHelper(BSTNode<K, V> root, int space, int count) {
+    	
+    	if (root == null) {
+    		return;
+    	}
+    	
+    	space += count;
+    	
+    	printHelper(root.right, space, count);
+    	
+    	System.out.print("\n");
+    	for (int i = count; i < space; i++) {
+    		System.out.print(" ");
+    	}
+    	System.out.print(root.key + "\n");
+    	
+    	printHelper(root.left, space, count);
+    }
+    
+    private BSTNode<K, V> find(K k) throws IllegalNullKeyException {
+    	if (k == null) {
+    		throw new IllegalNullKeyException("Cannot handle null key");
+    	} 
+    	
+    	BSTNode<K, V> n = root;
+    	while (n != null) {
+	    	int cmp = k.compareTo(n.key);
+	    	if (cmp < 0) {
+	    		n = n.left;
+	    	} else if (cmp > 0) {
+	    		n = n.right;
+	    	} else {
+	    		return n;
+	    	}
+    	}
+    	return n;
+    }
     
     /**
      * Returns the sibling of a parent node
@@ -699,6 +757,15 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return
      */
     private BSTNode<K, V> maintainRedProperty(BSTNode<K, V> K) {
+    	
+    	// No changes needed if K's parent is not red
+    	if (K.equals(root)) {
+    		return K;
+    	}
+    	
+    	if (K.parent.color == 'b') {
+    		return K;
+    	}
     	
     	BSTNode<K, V> n = null;
     	
