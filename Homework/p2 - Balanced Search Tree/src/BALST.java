@@ -355,7 +355,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * If key is null, throw IllegalNullKeyException
      */
     public boolean remove(K key) throws IllegalNullKeyException {
-        return false;
+        
     }
 
     /**
@@ -366,7 +366,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * If key is not found, throw KeyNotFoundException().
      */
     public V get(K key) throws IllegalNullKeyException, KeyNotFoundException {
-        return null;
+    	if (key == null) {
+        	throw new IllegalNullKeyException("cannot handle null key");
+        }
+        
+        if (!contains(key)) {
+        	throw new KeyNotFoundException("key not found");
+        }
+        return find(key).value;
     }
 
     /** 
@@ -375,7 +382,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * Returns false if key is not null and is not present 
      */
     public boolean contains(K key) throws IllegalNullKeyException { 
-        return false;
+    	if (key == null) {
+        	throw new IllegalNullKeyException("cannot handle null key");
+        }	
+    	return find(key) != null;
     }
 
     /**
@@ -472,6 +482,13 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	printHelper(root.left, space, count);
     }
     
+    /**
+     * Finds the BSTNode in the BST given the key.
+     * 
+     * @param k they key to search
+     * @return BSTNode that has the key. Null if the key isn't there
+     * @throws IllegalNullKeyException if key is null
+     */
     private BSTNode<K, V> find(K k) throws IllegalNullKeyException {
     	if (k == null) {
     		throw new IllegalNullKeyException("Cannot handle null key");
@@ -487,6 +504,32 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	    	} else {
 	    		return n;
 	    	}
+    	}
+    	return n;
+    }
+    
+    /**
+     * Finds the node with the smallest key in the BST
+     * 
+     * @param n node to start from
+     * @return the node with the smallest key
+     */
+    private BSTNode<K, V> min(BSTNode<K, V> n) {
+    	if (n.left != null) {
+    		return max(n.left);
+    	}
+    	return n;
+    }
+    
+    /**
+     * Finds the node with the largest key in the BST
+     * 
+     * @param n node to start from
+     * @return the node with the largest key
+     */
+    private BSTNode<K, V> max(BSTNode<K, V> n) {
+    	if (n.right != null) {
+    		return max(n.right);
     	}
     	return n;
     }
