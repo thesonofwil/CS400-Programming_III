@@ -197,5 +197,21 @@ public class BALSTTest {
     
     // Does delete work? 
     // If delete is not implemented, does calling it throw an UnsupportedOperationException
-
+    
+    @Test
+    void testBST_005_insert_simple_sorted_delete_root() {
+    	try {
+			bst.insert(10, "10");
+			bst.insert(20, "20");
+		    bst.insert(30, "30");
+		    assert bst.numKeys() == 3;
+		    assert bst.remove(20);
+		    System.out.println("Root = " + bst.getKeyAtRoot());
+		    assert bst.getKeyAtRoot() == 10;
+		    assert bst.numKeys() == 2;
+		} catch (Exception e) {
+			e.printStackTrace();
+            fail( "Unexpected exception: "+e.getMessage() );
+		}
+    }
 }

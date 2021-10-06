@@ -355,9 +355,56 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * If key is null, throw IllegalNullKeyException
      */
     public boolean remove(K key) throws IllegalNullKeyException {
-        
+    	//BSTNode<K, V> removed = remove(this.root, key);
+    	if (key == null) {
+    		throw new IllegalNullKeyException("Cannot handle null key");
+    	}
+    	
+    	if (!contains(key)) {
+    		return false;
+    	}
+    	
+    	root = remove(root, key); // Recursively go through BST and delete key
+    	numKeys--;
+    	
+    	return true;
     }
-
+    
+    private BSTNode<K, V> remove(BSTNode<K, V> n, K key) {
+    	
+    	// Base case and Case 1 - n has no children
+    	if (n == null) {
+    		return null;
+    	} 
+    	
+    	// Base case 2 - key found
+    	if (n.key.equals(key)) {
+    		if (n.left == null && n.right == null) {
+    			return null;
+    		}
+    		
+    		// Case 2: n has one child
+        	if (n.left == null) {
+        		return n.right;
+        	} else if (n.right == null) {
+        		return n.left;
+        	}
+        	
+        	// Case 3: n has two children
+        	// Get In-order predecessor's key by finding largest key in the left subtree of node
+        	K predecessor = max(n.left).key; 
+        	n.key = predecessor;
+        	n.right = remove(n.right, predecessor);
+    	}
+        	
+        	else if (n.key.compareTo(key) < 0) {
+        		n.left = remove(n.left, key);
+        	} else {
+        		n.right = remove(n.right, key);
+        	}
+    	return n;
+    }
+    	
     /**
      * Returns the value associated with the specified key.
      *
@@ -367,11 +414,11 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      */
     public V get(K key) throws IllegalNullKeyException, KeyNotFoundException {
     	if (key == null) {
-        	throw new IllegalNullKeyException("cannot handle null key");
+        	throw new IllegalNullKeyException("Cannot handle null key");
         }
         
         if (!contains(key)) {
-        	throw new KeyNotFoundException("key not found");
+        	throw new KeyNotFoundException("Key not found");
         }
         return find(key).value;
     }
@@ -383,7 +430,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      */
     public boolean contains(K key) throws IllegalNullKeyException { 
     	if (key == null) {
-        	throw new IllegalNullKeyException("cannot handle null key");
+        	throw new IllegalNullKeyException("Cannot handle null key");
         }	
     	return find(key) != null;
     }
@@ -463,6 +510,12 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	
     }
     
+    /**
+     * 
+     * @param root
+     * @param space
+     * @param count
+     */
     private void printHelper(BSTNode<K, V> root, int space, int count) {
     	
     	if (root == null) {
