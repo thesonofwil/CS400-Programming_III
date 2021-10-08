@@ -101,7 +101,16 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @throws KeyNotFoundException if key is not found in this RBT
      */
     public K getKeyOfLeftChildOf(K key) throws IllegalNullKeyException, KeyNotFoundException {
+    	if (key == null) {
+    		throw new IllegalNullKeyException("Cannot handle null key");
+    	}
+    	
     	BSTNode<K, V> parent = find(key);
+    	
+    	if (parent == null) {
+    		throw new KeyNotFoundException("Key not found");
+    	}
+    	
         return parent.left.key;
     }
     
@@ -117,8 +126,17 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @throws KeyNotFoundException if key is not found in this RBT
      */
     public K getKeyOfRightChildOf(K key) throws IllegalNullKeyException, KeyNotFoundException {
-         BSTNode<K, V> parent = find(key);
-         return parent.right.key;
+    	if (key == null) {
+    		throw new IllegalNullKeyException("Cannot handle null key");
+    	}
+    	
+    	BSTNode<K, V> parent = find(key);
+    	
+    	if (parent == null) {
+    		throw new KeyNotFoundException("Key not found");
+    	}
+    	
+        return parent.right.key;
     }
     
 
@@ -292,12 +310,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	throw new IllegalNullKeyException("");
         }
         
-        root = insert(root, key, value, null);
-        
         // If just inserted root 
         if (numKeys() == 0) {
-        	root.color = 'b';
+        	root = new BSTNode<K, V>(key, value, null, null, null, 'b');
+        } else { 
+        	insert(root, key, value, null);
         }
+        
+        
         
         // If not empty, then
         // 1. Use BST insert algorithm to add key
@@ -338,7 +358,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	return new BSTNode<K, V>(key, value, null, null, parent,'r');
         }
     	
-    	if (node.key.equals(key)) {
+    	else if (node.key.equals(key)) {
     		throw new DuplicateKeyException("Cannot insert duplicate key");
     	}
     	
@@ -347,15 +367,17 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	// Add key to left subtree
     	if (cmp < 0) {
     		node.left = insert(node.left, key, value, node);
+    		return maintainRedProperty(node.left);
     	} 
     	
     	// Add key to right subtree
     	else if (cmp > 0) {
     		node.right = insert(node.right, key, value, node);
+    		return maintainRedProperty(node.right);
     	}
     	
     	// Not balancing for some reason
-		return maintainRedProperty(node);
+		return node;
     }
     
     
@@ -604,10 +626,11 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * 
      * @param P the parent of the node of interest
      * @param G the grandparent of the node of interest
-     * @return
+     * @return the sibling node of P, or null if there is none
      */
     private BSTNode<K, V> getParentSibling(BSTNode<K, V> P, BSTNode<K, V> G) {
-    	if (G.left.equals(P)) {
+    	
+    	if (G.left != null && G.left.equals(P)) {
     		return G.right;
     	} else {
     		return G.left;
@@ -680,7 +703,13 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		return false;
     	}
     	
-    	return getParentSibling(parent, grandparent).color == 'r';
+    	BSTNode<K, V> sibling = getParentSibling(parent, grandparent);
+    	
+    	if (sibling == null) {
+    		return false;
+    	}
+    	
+    	return sibling.color == 'r';
     }
     
     // There's 4 cases to consider when doing tri-node restructure
@@ -704,8 +733,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	
     	// Rotate and update parent
     	G.left = P.right;
-    	P.right.parent = G;
     	P.right = G;
+    	P.right.parent = G;
     	G.parent = P;
     	    	
     	// Recolor 
@@ -885,14 +914,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		BSTNode<K, V> G = P.parent;
     		
     		// TNR depending on structures of K, P, and G
-    		if (G.left.equals(P) && P.left.equals(K)) {
-    			n = rotateRight(K);
-    		} else if (G.right.equals(P) && P.right.equals(K)) {
-    			n = rotateRight(K);
-    		} else if (G.left.equals(P) && P.right.equals(K)) {
-    			n = rotateLeftRight(K);
-    		} else if (G.right.equals(P) && P.left.equals(K)) {
-    			n = rotateRightLeft(K);
+    		if ((G.left != null && P.left != null) && (G.left.equals(P) && P.left.equals(K))) {
+    			n = rotateRight(G);
+    		} else if ((G.right != null && P.right != null) && (G.right.equals(P) && P.right.equals(K))) {
+    			n = rotateLeft(G);
+    		} else if ((G.left != null && P.right != null) && (G.left.equals(P) && P.right.equals(K))) {
+    			n = rotateLeftRight(G);
+    		} else if ((G.right != null && P.left != null) && (G.right.equals(P) && P.left.equals(K))) {
+    			n = rotateRightLeft(G);
     		}
     	}
     	
