@@ -28,7 +28,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     
     // Private fields of BST
     private BSTNode<K, V> root;
-    private int heightTree; 
     private int numKeys;
 	
 	/**
@@ -47,8 +46,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	    BSTNode<K,V> right;
 	    BSTNode<K, V> parent;
 	    char color;
-	    int balanceFactor; // may not need this
-	    int height; // may not need this
 
 	    /**
 	     * Constructor given a node's children 
@@ -64,8 +61,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	        this.left = leftChild;
 	        this.right = rightChild;
 	        this.parent = parent;
-	        this.height = 0;
-	        this.balanceFactor = 0;
 	        this.color = color;
 	    }
 	    
@@ -78,7 +73,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	 */
 	public BALST() {
 		root = null;
-		heightTree = 0;
 		numKeys = 0;
 	}
 	
@@ -147,7 +141,25 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return the number of levels that contain keys in this BINARY SEARCH TREE
      */
     public int getHeight() {
-         return 0;
+         if (root == null) {
+        	 return 0;
+         } else if (numKeys() == 1) {
+        	 return 1;
+         } return getHeight(root);
+    }
+    
+    /**
+     * Recursive helper function that returns the larger of heights between subtrees
+     * 
+     * @param n the node to start from
+     * @return height of the tree
+     */
+    public int getHeight(BSTNode<K, V> n) {
+    	if (n == null) {
+    		return -1;
+    	}
+    	
+    	return Math.max(getHeight(n.left), getHeight(n.right)) + 1;
     }
     
     
