@@ -316,9 +316,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         } else { 
         	insert(root, key, value, null);
         }
-        
-        
-        
+               
         // If not empty, then
         // 1. Use BST insert algorithm to add key
         // 2. Color the new node red
@@ -733,8 +731,19 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	
     	// Rotate and update parent
     	G.left = P.right;
+    	if (P.right != null) {
+    		P.right.parent = G;
+    	}
+    	
+    	P.parent = G.parent;
+    	if (G.parent == null) {
+    		this.root = P;
+    	} else if (G.equals(G.parent.right)) {
+    		G.parent.right = P;
+    	} else {
+    		G.parent.left = P;
+    	}
     	P.right = G;
-    	P.right.parent = G;
     	G.parent = P;
     	    	
     	// Recolor 
@@ -763,11 +772,27 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	BSTNode<K, V> K = P.right;
     	
     	// Rotate and update parent
+//    	G.right = P.left;
+//    	P.left.parent = G;
+//    	P.left = G;
+//    	G.parent = P;
+    	
     	G.right = P.left;
-    	P.left.parent = G;
+    	if (P.left != null) {
+    		P.left.parent = G;
+    	}
+    	
+    	P.parent = G.parent;
+    	if (G.parent == null) {
+    		this.root = P;
+    	} else if (G.equals(G.parent.left)) {
+    		G.parent.left = P;
+    	} else {
+    		G.parent.right = P;
+    	}
     	P.left = G;
     	G.parent = P;
-    	    	
+    	
     	// Recolor 
     	P.color = 'b';
     	K.color = 'r';
