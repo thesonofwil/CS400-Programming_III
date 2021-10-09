@@ -396,7 +396,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 
     /** 
      * If key is found, remove the key,value pair from the data structure 
-     * and decrease num keys, and return true.
+     * and decrease num keys, and return true. Note this remove method only 
+     * maintains BST property, NOT RB properties. 
      * If key is not found, do not decrease the number of keys in the data structure, return false.
      * If key is null, throw IllegalNullKeyException
      */
@@ -410,20 +411,24 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		return false;
     	}
     	
-    	root = remove(root, key); // Recursively go through BST and delete key
+    	remove(root, key); // Recursively go through BST and delete key
     	numKeys--;
     	
     	return true;
     }
     
-    private BSTNode<K, V> remove(BSTNode<K, V> n, K key) {
+    private BSTNode<K, V> remove(BSTNode<K, V> n, K key) throws IllegalNullKeyException {
+    	
+    	if (key == null) {
+    		throw new IllegalNullKeyException("Cannot handle null key");
+    	}
     	
     	// Base case and Case 1 - n has no children
     	if (n == null) {
-    		return null;
+    		return n;
     	} 
     	
-    	// Base case 2 - key found
+    	// Another base case - key found
     	if (n.key.equals(key)) {
     		if (n.left == null && n.right == null) {
     			return null;
@@ -437,13 +442,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	}
         	
         	// Case 3: n has two children
-        	// Get In-order predecessor's key by finding largest key in the left subtree of node
-        	K predecessor = max(n.left).key; 
-        	n.key = predecessor;
-        	n.right = remove(n.right, predecessor);
+        	// Get In-order predecessor key by finding largest key in the left subtree of node
+        	BSTNode<K, V> predecessor = find(max(n.left).key); 
+        	n.key = predecessor.key;
+        	n.value = predecessor.value;
+        	n.left = remove(n.left, predecessor.key);
     	}
         	
-        	else if (n.key.compareTo(key) < 0) {
+        	else if (key.compareTo(n.key) < 0) {
         		n.left = remove(n.left, key);
         	} else {
         		n.right = remove(n.right, key);
@@ -690,7 +696,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * After insert or delete, check if red property is violated and restore if needed
      * Red property - red nodes must have black children. New leaves are added as black
      * 
-     * @precondition K is a red node with a red parent
      * @return
      */
     private void maintainRedProperty(BSTNode<K, V> K) {
@@ -699,13 +704,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		return;
     	}
     	
-    	// No violations if red node has black child
-    	if (K.color == 'b' && K.parent.color == 'r') {
+    	// Check if K violates red property
+    	// 1. Red nodes must have black children
+    	// 2. That also means K can be red with a black parent if K is a leaf
+    	if ((K.color == 'b' && K.parent.color == 'r') || 
+    			(isOnlyChild(K)) && K.color == 'r' && K.parent.color == 'b') {
     		return;
     	}
-    	
-    	BSTNode<K, V> n = null;
-    	
+    	    	
     	// Recolor if K's parent has a red sibling
     	if (parentSiblingIsRed(K)) {
     		recolor(K);
@@ -716,14 +722,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		
     		// TNR depending on structures of K, P, and G
     		if ((G.left != null && P.left != null) && (G.left.equals(P) && P.left.equals(K))) {
-    			n = rotateRight(G);
+    			rotateRight(G);
     		} else if ((G.right != null && P.right != null) && (G.right.equals(P) && P.right.equals(K))) {
-    			n = rotateLeft(G);
+    			rotateLeft(G);
     		} else if ((G.left != null && P.right != null) && (G.left.equals(P) && P.right.equals(K))) {
-    			n = rotateLeftRight(G);
+    			rotateLeftRight(G);
     			doubleRotated = true;
     		} else if ((G.right != null && P.left != null) && (G.right.equals(P) && P.left.equals(K))) {
-    			n = rotateRightLeft(G);
+    			rotateRightLeft(G);
     			doubleRotated = true;
     		}
     		
@@ -829,6 +835,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	}
     	
     	return sibling.color == 'r';
+    }
+    
+    private boolean isOnlyChild(BSTNode<K, V> n) {
+    	return (n.left == null && n.right == null);
     }
     
     // There's 4 cases to consider when doing tri-node restructure
