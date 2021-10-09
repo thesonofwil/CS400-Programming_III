@@ -111,6 +111,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		throw new KeyNotFoundException("Key not found");
     	}
     	
+    	if (parent.left == null) {
+    		return null;
+    	} 
+    	
         return parent.left.key;
     }
     
@@ -135,6 +139,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	if (parent == null) {
     		throw new KeyNotFoundException("Key not found");
     	}
+    	
+    	if (parent.right == null) {
+    		return null;
+    	} 
     	
         return parent.right.key;
     }
