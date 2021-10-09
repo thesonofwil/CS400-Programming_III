@@ -620,6 +620,53 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     }
     
     /**
+     * After insert or delete, check if red property is violated and restore if needed
+     * Red property - red nodes must have black children. New leaves are added as black
+     * 
+     * @precondition K is a red node with a red parent
+     * @return
+     */
+    private BSTNode<K, V> maintainRedProperty(BSTNode<K, V> K) {
+    	
+    	// No changes needed if K's parent is not red
+    	if (K.equals(root)) {
+    		return K;
+    	}
+    	
+    	if (K.parent.color == 'b') {
+    		return K;
+    	}
+    	
+    	BSTNode<K, V> n = null;
+    	
+    	// Recolor if K's parent has a red sibling
+    	if (parentSiblingIsRed(K)) {
+    		n = recolor(K);
+    	} else if (parentSiblingIsNull(K) || parentSiblingIsBlack(K)) {
+    		BSTNode<K, V> P = K.parent;
+    		BSTNode<K, V> G = P.parent;
+    		
+    		// TNR depending on structures of K, P, and G
+    		if ((G.left != null && P.left != null) && (G.left.equals(P) && P.left.equals(K))) {
+    			n = rotateRight(G);
+    		} else if ((G.right != null && P.right != null) && (G.right.equals(P) && P.right.equals(K))) {
+    			n = rotateLeft(G);
+    		} else if ((G.left != null && P.right != null) && (G.left.equals(P) && P.right.equals(K))) {
+    			n = rotateLeftRight(G);
+    		} else if ((G.right != null && P.left != null) && (G.right.equals(P) && P.left.equals(K))) {
+    			n = rotateRightLeft(G);
+    		}
+    		
+    		// Recolor
+        	K.color = 'b';
+        	P.color = 'r';
+        	G.color = 'r';
+    	}
+    	
+    	return n;
+    }
+    
+    /**
      * Returns the sibling of a parent node
      * 
      * @param P the parent of the node of interest
@@ -745,11 +792,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	}
     	P.right = G;
     	G.parent = P;
-    	    	
-    	// Recolor 
-    	P.color = 'b';
-    	K.color = 'r';
-    	G.color = 'r';
     	
     	return P;
     }
@@ -793,80 +835,68 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	P.left = G;
     	G.parent = P;
     	
-    	// Recolor 
-    	P.color = 'b';
-    	K.color = 'r';
-    	G.color = 'r';
-    	
     	return P;
     }
     
     /**
      *  Case 3: P is the left-child of G and K is the right child of P. Do a
-     *  left-right rotate on the root. 
+     *  left rotate on P and then a right rotate on G. 
      *  
-     *  	G              K
-     * 	   / \            / \
-     * 	  P   S    ->    P   G
-     *   / \                / \
-     *      K                  S 					 
+     *  	G          		G		        K
+     * 	   / \             / \		       / \
+     * 	  P   S    ->     K	  S	   ->	  P   G
+     *   / \             / \		         / \
+     *      K           P   			        S 					 
      *  
      * @param G the grandparent node to rotate on
-     * @return the new root which is P
+     * @return the new root which is K
      */
     private BSTNode<K, V> rotateLeftRight(BSTNode<K, V> G) {
     	BSTNode<K, V> P = G.left;
     	BSTNode<K, V> K = P.right;
     	
+    	rotateLeft(P);
+    	rotateRight(G);
     	// Rotate and update parent
-    	P.right = K.left;
-    	K.left.parent = P;
-    	G.left = K.right;
-    	K.right.parent = G;
-    	K.left = P;
-    	P.parent = K;
-    	K.right = G;
-    	G.parent = K;
-    	
-    	// Recolor
-    	K.color = 'b';
-    	P.color = 'r';
-    	G.color = 'r';
-    	
+//    	P.right = K.left;
+//    	K.left.parent = P;
+//    	G.left = K.right;
+//    	K.right.parent = G;
+//    	K.left = P;
+//    	P.parent = K;
+//    	K.right = G;
+//    	G.parent = K;	   	
     	return K;
     }
     
     /**
      *  Case 4: P is the right-child of G and K is the left child of P. Do a
-     *  right-left rotate on the root. 
+     *  right rotate on P and then a left rotate on G. 
      *  
-     *  	G              K
-     * 	   / \            / \
-     * 	  S   P    ->    G   P
-     *       / \        / \
-     *      K          S 					 
+     *  	G          		G		        K
+     * 	   / \             / \		       / \
+     * 	  S   S    ->     S	  K	   ->	  G   P
+     *       / \             / \		 / \
+     *      K                	P	    S 	
      *  
      * @param G the grandparent node to rotate on
-     * @return the new root which is P
+     * @return the new root which is K
      */
     private BSTNode<K, V> rotateRightLeft(BSTNode<K, V> G) {
     	BSTNode<K, V> P = G.left;
     	BSTNode<K, V> K = P.right;
     	
+    	rotateRight(P);
+    	rotateLeft(P);
     	// Rotate and update parent
-    	P.left = K.right;
-    	K.right.parent = P;
-    	G.right = K.left;
-    	K.left.parent = G;
-    	K.right = P;
-    	P.parent = K;
-    	K.left = G;
-    	G.parent = K;
-    	
-    	// Recolor
-    	K.color = 'b';
-    	P.color = 'r';
-    	G.color = 'r';
+//    	P.left = K.right;
+//    	K.right.parent = P;
+//    	G.right = K.left;
+//    	K.left.parent = G;
+//    	K.right = P;
+//    	P.parent = K;
+//    	K.left = G;
+//    	G.parent = K;    	
     	
     	return K;
     }
@@ -909,48 +939,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     
     private void maintainRootProperty() {
     	this.root.color = 'b';
-    }
-    
-    /**
-     * After insert or delete, check if red property is violated and restore if needed
-     * Red property - red nodes must have black children. New leaves are added as black
-     * 
-     * @precondition K is a red node with a red parent
-     * @return
-     */
-    private BSTNode<K, V> maintainRedProperty(BSTNode<K, V> K) {
-    	
-    	// No changes needed if K's parent is not red
-    	if (K.equals(root)) {
-    		return K;
-    	}
-    	
-    	if (K.parent.color == 'b') {
-    		return K;
-    	}
-    	
-    	BSTNode<K, V> n = null;
-    	
-    	// Recolor if K's parent has a red sibling
-    	if (parentSiblingIsRed(K)) {
-    		n = recolor(K);
-    	} else if (parentSiblingIsNull(K) || parentSiblingIsBlack(K)) {
-    		BSTNode<K, V> P = K.parent;
-    		BSTNode<K, V> G = P.parent;
-    		
-    		// TNR depending on structures of K, P, and G
-    		if ((G.left != null && P.left != null) && (G.left.equals(P) && P.left.equals(K))) {
-    			n = rotateRight(G);
-    		} else if ((G.right != null && P.right != null) && (G.right.equals(P) && P.right.equals(K))) {
-    			n = rotateLeft(G);
-    		} else if ((G.left != null && P.right != null) && (G.left.equals(P) && P.right.equals(K))) {
-    			n = rotateLeftRight(G);
-    		} else if ((G.right != null && P.left != null) && (G.right.equals(P) && P.left.equals(K))) {
-    			n = rotateRightLeft(G);
-    		}
-    	}
-    	
-    	return n;
     }
     
 } // copyrighted material, students do not have permission to post on public sites
