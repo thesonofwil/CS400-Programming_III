@@ -339,16 +339,28 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param value value of key 
      * @param parent the parent node of the current node
      * @return the new node that was inserted
-     * @throws DuplicateKeyException if key already exists
+     * 
+     */
+    
+    /**
+     * Insert node following BST recursion and fix any violations
+     * 
+     * @param node node to start traversal from
+     * @param key key to insert
+     * @param value value of key
+     * @param parent the parent node of node
+     * @param cmp used to update parent/left/right pointers
+     * @throws DuplicateKeyException if key already exists in tree
      */
     private void insert(BSTNode<K, V> node, K key, V value, BSTNode<K, V> parent, int cmp) throws DuplicateKeyException {
     	
-    	// Base case - create new red node and establish pointer to parent
+    	// Insert at root if there are no nodes
     	if (root == null) {
     		root = new BSTNode<K, V>(key, value, null, null, null, 'b');
     		return;
     	}
     	
+    	// Base case - create new red node and update pointers
     	if (node == null) {
         	BSTNode<K,V> leaf = new BSTNode<K, V>(key, value, null, null, parent,'r');
         	if (cmp < 0) {
@@ -359,20 +371,17 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	return;
         }
     	
+    	// Recursively travel through tree and insert at empty spot 
     	cmp = key.compareTo(node.key);    
-    	BSTNode<K, V> temp = node;
     	if (cmp == 0) {
     		throw new DuplicateKeyException("Cannot insert duplicate key");
     	} else if (cmp < 0) { // Add key to left subtree
     		insert(node.left, key, value, node, cmp);
-    		temp = node.left;
-    		//maintainRedProperty(node.left);
+    		maintainRedProperty(node.left);
     	} else { // Add key to right subtree 
     		insert(node.right, key, value, node,cmp);
-    		temp = node.right;
-    		//maintainRedProperty(node.right);
+    		maintainRedProperty(node.right);
     	} 
-    	maintainRedProperty(temp);
     }
     
     
@@ -524,7 +533,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 //        List<K> list = getInOrderTraversal();
 //        
         int space = 0;
-        int height = 10;
+        int height = 5;
 //        
 //        for (int i = numKeys() - 1; i > 0; i--) { 
 //	        for (int j = count; j < space; j++) {
@@ -534,6 +543,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 //        }
     	
     	print(root, space, height);
+        //print("", this.root, false);
     	
     }
     
@@ -581,6 +591,14 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 //    	}
 //    	print(node.left, level++);
 //    }    
+    
+//    public void print(String prefix, BSTNode<K,V> n, boolean isLeft) {
+//        if (n != null) {
+//            System.out.println (prefix + (isLeft ? "|-- " : "\\-- ") + n.key);
+//            print(prefix + (isLeft ? "|   " : "    "), n.left, true);
+//            print(prefix + (isLeft ? "|   " : "    "), n.right, false);
+//        }
+//    }
     
     public void print(BSTNode<K, V> n, int space, int height)
     {
@@ -686,10 +704,11 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	
     	// Recolor if K's parent has a red sibling
     	if (parentSiblingIsRed(K)) {
-    		n = recolor(K);
+    		recolor(K);
     	} else if (parentSiblingIsNull(K) || parentSiblingIsBlack(K)) {
     		BSTNode<K, V> P = K.parent;
     		BSTNode<K, V> G = P.parent;
+    		boolean doubleRotated = false; // This determines recoloring after rotating
     		
     		// TNR depending on structures of K, P, and G
     		if ((G.left != null && P.left != null) && (G.left.equals(P) && P.left.equals(K))) {
@@ -698,14 +717,22 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     			n = rotateLeft(G);
     		} else if ((G.left != null && P.right != null) && (G.left.equals(P) && P.right.equals(K))) {
     			n = rotateLeftRight(G);
+    			doubleRotated = true;
     		} else if ((G.right != null && P.left != null) && (G.right.equals(P) && P.left.equals(K))) {
     			n = rotateRightLeft(G);
+    			doubleRotated = true;
     		}
     		
     		// Recolor
-        	K.color = 'b';
-        	P.color = 'r';
-        	G.color = 'r';
+    		if (doubleRotated) {
+	        	K.color = 'b';
+	        	P.color = 'r';
+	        	G.color = 'r';
+	        } else {
+	        	P.color = 'b';
+	        	K.color = 'r';
+	        	G.color = 'r';
+	        }
     	}
     }
     
@@ -962,7 +989,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * 
      * @param K the leaf node that was inserted
      */
-    private BSTNode<K,V> recolor(BSTNode<K, V> K) {
+    private void recolor(BSTNode<K, V> K) {
     	BSTNode<K, V> P = K.parent;
     	BSTNode<K, V> G = P.parent;
     	BSTNode<K, V> S = getParentSibling(P, G);
@@ -973,9 +1000,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	
     	P.color = 'b';
     	S.color = 'b';
-    	K.color = 'r';
-    	
-    	return G; // If G happened to be the root
+    	K.color = 'r';    	
     }
     
     private void maintainRootProperty() {
