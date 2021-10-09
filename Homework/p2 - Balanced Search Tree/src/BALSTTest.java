@@ -247,4 +247,70 @@ public class BALSTTest {
 		}
     	bst.print();
     }
+    
+    // Modeling RBT Insert Practice from lecture notes
+    
+    // After recoloring, insert again which should not trigger an RPV
+    @Test
+    void testBST_008_insert_recolor_insert_no_violation() {
+    	try {
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18"); // root becomes 14 here but is red instead of black
+    		bst.insert(23, "23"); // Recolor 
+    		assert(bst.getKeyAtRoot() == 14);
+    		bst.insert(1, "1"); // This is causing a rotation when it shouldn't. Root is red for some reason
+    		assert(bst.getKeyOfLeftChildOf(7) == 1);
+    		bst.insert(11, "11");
+    		assert(bst.getKeyOfRightChildOf(7) == 11);
+    	} catch (Exception e) {
+			e.printStackTrace();
+            fail( "Unexpected exception: "+e.getMessage() );
+    	}
+    	bst.print();
+    }
+    
+    @Test
+    void testBST_009_RPV_after_Recolor() {
+    	try {
+    		bst.insert(20, "20");
+    		bst.insert(15, "15");
+    		bst.insert(25, "25");
+    		bst.insert(30, "30");
+    		bst.insert(12, "12");
+    		bst.insert(17, "17");
+    		bst.insert(28, "28"); // rotate 25-30-28
+    		assert(bst.getKeyAtRoot() == 20);
+    		assert(bst.getKeyOfRightChildOf(20) == 28);
+    		assert(bst.getKeyOfLeftChildOf(28) == 25);
+    		assert(bst.getKeyOfRightChildOf(28) == 30);
+    	} catch (Exception e) {
+			e.printStackTrace();
+            fail( "Unexpected exception: "+e.getMessage() );
+    	}
+    	bst.print();
+    }
+    
+    @Test
+    void testBST_010_insert_cascade_rotates() {
+    	try {
+    		bst.insert(20, "20");
+    		bst.insert(15, "15");
+    		bst.insert(25, "25");
+    		bst.insert(30, "30");
+    		bst.insert(12, "12");
+    		bst.insert(17, "17");
+    		bst.insert(28, "28"); // rotate 25-30-28
+    		bst.insert(33, "33"); // recolor here
+    		assert(bst.getKeyOfRightChildOf(31) == 28);
+    		assert(bst.getKeyOfLeftChildOf(28) == 25);
+    		assert(bst.getKeyOfRightChildOf(28) == 30);
+    		bst.insert(31, "31"); // one TNR here
+    		
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage() );
+    	}	
+    	bst.print();
+    }
 }
