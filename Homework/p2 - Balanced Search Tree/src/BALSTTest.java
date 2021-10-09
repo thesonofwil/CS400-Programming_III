@@ -44,7 +44,7 @@ public class BALSTTest {
             bst.insert(30, "30");
             if (!bst.getKeyAtRoot().equals(10)) 
                 fail("inserting 30 changed root");
-
+                        
             if (!bst.getKeyOfRightChildOf(20).equals(30)) 
                 fail("inserting 30 as right child of 20");
 
@@ -206,9 +206,22 @@ public class BALSTTest {
 		    bst.insert(30, "30");
 		    assert bst.numKeys() == 3;
 		    assert bst.remove(20);
-		    System.out.println("Root = " + bst.getKeyAtRoot());
 		    assert bst.getKeyAtRoot() == 10;
 		    assert bst.numKeys() == 2;
+		} catch (Exception e) {
+			e.printStackTrace();
+            fail( "Unexpected exception: "+e.getMessage() );
+		}
+    }
+    
+    @Test
+    void testBST_006_insert_simple_rotate_left_right() {
+    	try {
+			bst.insert(20, "20");
+			bst.insert(10, "10");
+		    bst.insert(15, "15");
+		    assert bst.numKeys() == 3;
+		    assert bst.getKeyAtRoot() == 15;
 		} catch (Exception e) {
 			e.printStackTrace();
             fail( "Unexpected exception: "+e.getMessage() );
