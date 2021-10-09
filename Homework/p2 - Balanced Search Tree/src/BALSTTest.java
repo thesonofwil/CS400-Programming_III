@@ -248,7 +248,7 @@ public class BALSTTest {
     	bst.print();
     }
     
-    // Modeling RBT Insert Practice from lecture notes
+    // Tests 8 - 10 model after RBT Insert Practice from lecture notes
     
     // After recoloring, insert again which should not trigger an RPV
     @Test
@@ -256,10 +256,10 @@ public class BALSTTest {
     	try {
     		bst.insert(7, "7");
     		bst.insert(14, "14");
-    		bst.insert(18, "18"); // root becomes 14 here but is red instead of black
+    		bst.insert(18, "18");
     		bst.insert(23, "23"); // Recolor 
     		assert(bst.getKeyAtRoot() == 14);
-    		bst.insert(1, "1"); // This is causing a rotation when it shouldn't. Root is red for some reason
+    		bst.insert(1, "1");
     		assert(bst.getKeyOfLeftChildOf(7) == 1);
     		bst.insert(11, "11");
     		assert(bst.getKeyOfRightChildOf(7) == 11);
@@ -273,17 +273,17 @@ public class BALSTTest {
     @Test
     void testBST_009_RPV_after_Recolor() {
     	try {
-    		bst.insert(20, "20");
-    		bst.insert(15, "15");
-    		bst.insert(25, "25");
-    		bst.insert(30, "30");
-    		bst.insert(12, "12");
-    		bst.insert(17, "17");
-    		bst.insert(28, "28"); // rotate 25-30-28
-    		assert(bst.getKeyAtRoot() == 20);
-    		assert(bst.getKeyOfRightChildOf(20) == 28);
-    		assert(bst.getKeyOfLeftChildOf(28) == 25);
-    		assert(bst.getKeyOfRightChildOf(28) == 30);
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20"); // right-left rotate 18-23-20
+    		assert(bst.getKeyAtRoot() == 14);
+    		assert(bst.getKeyOfRightChildOf(14) == 20);
+    		assert(bst.getKeyOfLeftChildOf(20) == 18);
+    		assert(bst.getKeyOfRightChildOf(20) == 23);
     	} catch (Exception e) {
 			e.printStackTrace();
             fail( "Unexpected exception: "+e.getMessage() );
@@ -294,23 +294,85 @@ public class BALSTTest {
     @Test
     void testBST_010_insert_cascade_rotates() {
     	try {
-    		bst.insert(20, "20");
-    		bst.insert(15, "15");
-    		bst.insert(25, "25");
-    		bst.insert(30, "30");
-    		bst.insert(12, "12");
-    		bst.insert(17, "17");
-    		bst.insert(28, "28"); // rotate 25-30-28
-    		bst.insert(33, "33"); // recolor here
-    		assert(bst.getKeyOfRightChildOf(31) == 28);
-    		assert(bst.getKeyOfLeftChildOf(28) == 25);
-    		assert(bst.getKeyOfRightChildOf(28) == 30);
-    		bst.insert(31, "31"); // one TNR here
-    		
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20"); // right-left rotate 18-23-20
+    		bst.insert(29, "29"); // recolor
+    		assert(bst.getKeyOfRightChildOf(23) == 29);
+    		assert(bst.getKeyOfLeftChildOf(20) == 18);
+    		bst.insert(25, "25"); // rotate here
+    		assert(bst.getKeyAtRoot() == 14);
+    		assert(bst.getKeyOfRightChildOf(20) == 25);
+    		assert(bst.getKeyOfLeftChildOf(25) == 23);
+    		assert(bst.getKeyOfRightChildOf(25) == 29);
+    		bst.insert(27, "27"); // cascade - recolor and rotate
+    		assert(bst.getKeyAtRoot() == 20); 
+    		assert(bst.getKeyOfRightChildOf(20) == 25);
+    		assert(bst.getKeyOfLeftChildOf(25) == 23);
+    		assert(bst.getKeyOfRightChildOf(25) == 29);
+    		assert(bst.getKeyOfLeftChildOf(29) == 27);
+    		assert(bst.getKeyOfRightChildOf(29) == null);
+    		assert(bst.numKeys() == 10);
     	} catch (Exception e) {
     		e.printStackTrace();
     		fail( "Unexpected exception: "+e.getMessage() );
     	}	
     	bst.print();
     }
-}
+    
+    @Test 
+    void testBST_011_remove_parent_with_two_children() {
+    	try {
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20");
+    		bst.insert(29, "29"); 
+    		bst.insert(25, "25"); 
+    		bst.insert(27, "27"); 
+    		bst.remove(25);
+    		assert (!bst.contains(25));
+    		assert (bst.getKeyOfRightChildOf(20) == 23);
+    		assert (bst.numKeys() == 9);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage() );
+    	}
+    }
+    	
+    	@Test 
+    	void testBST_012_remove_parent_with_two_children_and_grandchildren() {
+    	    	try {
+    	    		bst.insert(7, "7");
+    	    		bst.insert(14, "14");
+    	    		bst.insert(18, "18");
+    	    		bst.insert(23, "23");
+    	    		bst.insert(1, "1");
+    	    		bst.insert(11, "11");
+    	    		bst.insert(20, "20"); 
+    	    		bst.insert(29, "29"); 
+    	    		bst.insert(25, "25"); 
+    	    		bst.insert(27, "27"); 
+    	    		bst.insert(21, "21");
+    	    		bst.insert(24, "24");
+    	    		bst.insert(30, "30");
+    	    		bst.remove(25); // Remove node with two children and four grandchildren
+    	    		assert (!bst.contains(25));
+    	    		assert (bst.getKeyOfRightChildOf(20) == 24);
+    	    		assert (bst.getKeyOfLeftChildOf(24) == 23);
+    	    		assert (bst.getKeyOfRightChildOf(23) == null);
+    	    		assert (bst.getKeyOfLeftChildOf(23) == 21);
+    	    		assert (bst.numKeys() == 12);
+    	    	} catch (Exception e) {
+    	    		e.printStackTrace();
+    	    		fail( "Unexpected exception: "+e.getMessage() );
+    	    	}	
+    	}
+	}
