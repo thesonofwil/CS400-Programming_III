@@ -774,7 +774,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      */
     private BSTNode<K, V> rotateRight(BSTNode<K, V> G) {
     	BSTNode<K, V> P = G.left;
-    	BSTNode<K, V> K = P.left;
     	
     	// Rotate and update parent
     	G.left = P.right;
@@ -811,7 +810,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      */
     private BSTNode<K, V> rotateLeft(BSTNode<K, V> G) {
     	BSTNode<K, V> P = G.right;
-    	BSTNode<K, V> K = P.right;
     	
     	// Rotate and update parent
 //    	G.right = P.left;
@@ -875,7 +873,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      *  
      *  	G          		G		        K
      * 	   / \             / \		       / \
-     * 	  S   S    ->     S	  K	   ->	  G   P
+     * 	  S   P    ->     S	  K	   ->	  G   P
      *       / \             / \		 / \
      *      K                	P	    S 	
      *  
@@ -883,11 +881,11 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return the new root which is K
      */
     private BSTNode<K, V> rotateRightLeft(BSTNode<K, V> G) {
-    	BSTNode<K, V> P = G.left;
-    	BSTNode<K, V> K = P.right;
+    	BSTNode<K, V> P = G.right;
+    	BSTNode<K, V> K = P.left;
     	
     	rotateRight(P);
-    	rotateLeft(P);
+    	rotateLeft(G);
     	// Rotate and update parent
 //    	P.left = K.right;
 //    	K.right.parent = P;
