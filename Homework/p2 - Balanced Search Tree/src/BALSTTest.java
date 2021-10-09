@@ -222,9 +222,29 @@ public class BALSTTest {
 		    bst.insert(15, "15");
 		    assert bst.numKeys() == 3;
 		    assert bst.getKeyAtRoot() == 15;
+		    assert bst.getKeyOfLeftChildOf(15) == 10;
+		    assert bst.getKeyOfRightChildOf(15) == 20; 
 		} catch (Exception e) {
 			e.printStackTrace();
             fail( "Unexpected exception: "+e.getMessage() );
 		}
+    	bst.print();
+    }
+    
+    @Test
+    void testBST_007_insert_simple_rotate_right_left() {
+    	try {
+			bst.insert(20, "20");
+			bst.insert(30, "30");
+		    bst.insert(25, "25");
+		    assert bst.numKeys() == 3;
+		    assert bst.getKeyAtRoot() == 25;
+		    assert bst.getKeyOfLeftChildOf(25) == 20;
+		    assert bst.getKeyOfRightChildOf(25) == 30; 
+		} catch (Exception e) {
+			e.printStackTrace();
+            fail( "Unexpected exception: "+e.getMessage() );
+		}
+    	bst.print();
     }
 }
