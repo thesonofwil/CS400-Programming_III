@@ -687,16 +687,12 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      */
     private void maintainRedProperty(BSTNode<K, V> K) {
     	
-    	if (K == null) {
+    	if (K == null || K.equals(root)) {
     		return;
     	}
     	
-    	// No changes needed if K's parent is not red
-    	if (K.equals(root)) {
-    		return;
-    	}
-    	
-    	if (K.parent.color == 'b') {
+    	// No violations if red node has black child
+    	if (K.color == 'b' && K.parent.color == 'r') {
     		return;
     	}
     	
