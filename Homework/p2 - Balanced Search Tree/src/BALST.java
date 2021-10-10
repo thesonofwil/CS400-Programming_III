@@ -171,20 +171,23 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	 return 0;
          } else if (numKeys() == 1) {
         	 return 1;
-         } return getHeight(root);
+         } 
+         
+         return getHeight(root);
     }
     
     /**
-     * Recursive helper function that returns the larger of heights between subtrees
+     * Recursive helper function that returns the larger of heights between subtrees.
+     * We define height of the tree as the number of nodes on the path from the root 
+     * to the deepest leaf. 
      * 
      * @param n the node to start from
      * @return height of the tree
      */
     public int getHeight(BSTNode<K, V> n) {
     	if (n == null) {
-    		return -1;
+    		return 0;
     	}
-    	
     	return Math.max(getHeight(n.left), getHeight(n.right)) + 1;
     }
     
