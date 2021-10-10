@@ -7,7 +7,8 @@ import java.util.List;
  * CS400 010
  * Due: 10/15/21 
  *
- * Implementation of a balanced search tree using a red-black implementation.
+ * Implementation of a balanced search tree using a red-black implementation. Note 
+ * that remove() follows regular BST implementation. 
  */
 
 // DO IMPLEMENT A RED BLACK TREE IN THIS CLASS
@@ -254,8 +255,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	}
     	
     	list.add(root.key);
-    	inOrderTraverse(list, root.left); // Traverse left subtree
-    	inOrderTraverse(list, root.right); // Traverse right subtree
+    	preOrderTraverse(list, root.left); // Traverse left subtree
+    	preOrderTraverse(list, root.right); // Traverse right subtree
     }
     
     /**
@@ -286,8 +287,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		return;
     	}
     	
-    	inOrderTraverse(list, root.left); // Traverse left subtree
-    	inOrderTraverse(list, root.right); // Traverse right subtree
+    	postOrderTraverse(list, root.left); // Traverse left subtree
+    	postOrderTraverse(list, root.right); // Traverse right subtree
     	list.add(root.key);
     }
 
@@ -350,38 +351,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	throw new IllegalNullKeyException("");
         }
         
-        // If just inserted root 
-        insert(root, key, value, null, 0);
-               
-        // If not empty, then
-        // 1. Use BST insert algorithm to add key
-        // 2. Color the new node red
-        // 3. Restore RB tree properties if necessary
-        
-        // Maybe this needs to be put in insert helper method to cascade restoration? 
-//        else {
-//        	
-//        	// Red property violated if red child has a red parent.
-//        	// Red parents must have black children
-//        	if (root.parent.color == 'r') { // This is throwing null pointer exception because root has no parent
-//        		root = maintainRedProperty(root);
-//        	}
-//        }
-        
+        insert(root, key, value, null, 0);         
         numKeys++;
     }
 
-    /**
-     * Insert node following BST recursion
-     * 
-     * @param node node to start traversal from
-     * @param key key to insert
-     * @param value value of key 
-     * @param parent the parent node of the current node
-     * @return the new node that was inserted
-     * 
-     */
-    
     /**
      * Insert node following BST recursion and fix any violations
      * 
@@ -424,8 +397,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	} 
     }
     
-    
-
     /** 
      * If key is found, remove the key,value pair from the data structure 
      * and decrease num keys, and return true. Note this remove method only 
@@ -434,7 +405,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * If key is null, throw IllegalNullKeyException
      */
     public boolean remove(K key) throws IllegalNullKeyException {
-    	//BSTNode<K, V> removed = remove(this.root, key);
     	if (key == null) {
     		throw new IllegalNullKeyException("Cannot handle null key");
     	}
@@ -443,7 +413,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		return false;
     	}
     	
-    	remove(root, key); // Recursively go through BST and delete key
+    	root = remove(root, key); // Recursively go through BST and delete key
     	numKeys--;
     	
     	return true;
@@ -575,76 +545,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 
      */
     public void print() {
-//        System.out.println("not yet implemented");
-//        List<K> list = getInOrderTraversal();
-//        
         int space = 0;
         int height = 5;
-//        
-//        for (int i = numKeys() - 1; i > 0; i--) { 
-//	        for (int j = count; j < space; j++) {
-//	        	System.out.print(" ");
-//	        }
-//	        System.out.print(list.get(i));
-//        }
-    	
-    	print(root, space, height);
-        //print("", this.root, false);
-    	
+    	print(root, space, height);    	
     }
-    
-//    /**
-//     * 
-//     * @param root
-//     * @param space
-//     * @param count
-//     */
-//    private void printHelper(BSTNode<K, V> root, int space, int count) {
-//    	
-//    	int i;
-//    	if (root == null) {
-//    		return;
-//    	}
-//    	
-//    	space += count;
-//    	
-//    	printHelper(root.right, space, count);
-//    	
-//    	System.out.print("\n");
-//    	for (i = count; i < space; i++) {
-//    		System.out.print(" ");
-//    	}
-//    	System.out.print(root.key + "\n");
-//    	
-//    	printHelper(root.left, space, count);
-//    }
-    
-//    private void print(BSTNode<K, V> node, int level) {
-//    	if (node == null) {
-//    		return;
-//    	}
-//       
-//    	print(node.right, level++);
-//    	
-//    	if (level != 0) {
-//        
-//    		for(int i = 0; i < level - 1; i++) {
-//    			System.out.print("|\t");
-//    		}
-//    		System.out.println("|-------"+node.key);
-//    	} else {
-//    		System.out.println(node.key);
-//    	}
-//    	print(node.left, level++);
-//    }    
-    
-//    public void print(String prefix, BSTNode<K,V> n, boolean isLeft) {
-//        if (n != null) {
-//            System.out.println (prefix + (isLeft ? "|-- " : "\\-- ") + n.key);
-//            print(prefix + (isLeft ? "|   " : "    "), n.left, true);
-//            print(prefix + (isLeft ? "|   " : "    "), n.right, false);
-//        }
-//    }
     
     public void print(BSTNode<K, V> n, int space, int height)
     {
@@ -697,6 +601,9 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	}
     	return n;
     }
+    
+    // This function is not in use, but could be used instead to get
+    // the in-order successor when deleting
     
     /**
      * Finds the node with the smallest key in the BST
@@ -927,12 +834,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     private BSTNode<K, V> rotateLeft(BSTNode<K, V> G) {
     	BSTNode<K, V> P = G.right;
     	
-    	// Rotate and update parent
-//    	G.right = P.left;
-//    	P.left.parent = G;
-//    	P.left = G;
-//    	G.parent = P;
-    	
     	G.right = P.left;
     	if (P.left != null) {
     		P.left.parent = G;
@@ -970,16 +871,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	BSTNode<K, V> K = P.right;
     	
     	rotateLeft(P);
-    	rotateRight(G);
-    	// Rotate and update parent
-//    	P.right = K.left;
-//    	K.left.parent = P;
-//    	G.left = K.right;
-//    	K.right.parent = G;
-//    	K.left = P;
-//    	P.parent = K;
-//    	K.right = G;
-//    	G.parent = K;	   	
+    	rotateRight(G);	   	
     	return K;
     }
     
@@ -1002,16 +894,6 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	
     	rotateRight(P);
     	rotateLeft(G);
-    	// Rotate and update parent
-//    	P.left = K.right;
-//    	K.right.parent = P;
-//    	G.right = K.left;
-//    	K.left.parent = G;
-//    	K.right = P;
-//    	P.parent = K;
-//    	K.left = G;
-//    	G.parent = K;    	
-    	
     	return K;
     }
     
@@ -1047,12 +929,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	P.color = 'b';
     	S.color = 'b';
     	K.color = 'r';    	
-    }
-    
-    private void maintainRootProperty() {
-    	this.root.color = 'b';
-    }
-    
+    }  
 } // copyrighted material, students do not have permission to post on public sites
 
 
