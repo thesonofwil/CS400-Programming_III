@@ -212,7 +212,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * In-order traversal recursive helper function.
      * 
      * @param list list to store keys in 
-     * @param root the root node of the tree
+     * @param root the node to traverse from
      */
     private void inOrderTraverse(List<K> list, BSTNode<K, V> root) {
     	// Base case
@@ -245,7 +245,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * Pre-order traversal recursive helper function.
      * 
      * @param list list to store keys in 
-     * @param root the root node of the tree
+     * @param root the node to traverse from
      */
     private void preOrderTraverse(List<K> list, BSTNode<K, V> root) {
     	// Base case
@@ -269,7 +269,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     public List<K> getPostOrderTraversal() {
     	List<K> list = new ArrayList<K>();
         
-        preOrderTraverse(list, this.root);
+        postOrderTraverse(list, this.root);
         
         return list;    
     }
@@ -278,7 +278,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * Post-order traversal recursive helper function.
      * 
      * @param list list to store keys in 
-     * @param root the root node of the tree
+     * @param root the node to traverse from
      */
     private void postOrderTraverse(List<K> list, BSTNode<K, V> root) {
     	// Base case
@@ -302,7 +302,36 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @return List of Keys in level-order
      */
     public List<K> getLevelOrderTraversal() {
-        return null;
+    	List<K> list = new ArrayList<K>();
+    	
+    	int heightTree = getHeight(root);
+    	
+    	for (int level = 1; level <= heightTree; level++) {
+    		inOrderTraverse(list, root, level);
+    	}
+    	
+    	return list;
+    }
+    
+    /**
+     * Level-order traversal recursive helper function. Adds each node of tree level 
+     * by level until level = height of tree. 
+     * 
+     * @param list list to store keys in
+     * @param root the node to traverse from
+     * @param level the level at which to get nodes from tree
+     */
+    private void inOrderTraverse(List<K> list, BSTNode<K, V> root, int level) {
+    	if (root == null) {
+    		return;
+    	}
+    	
+    	if (level == 1) {
+    		list.add(root.key);
+    	} else if (level > 1) {
+    		inOrderTraverse(list, root.left, level - 1);
+    		inOrderTraverse(list, root.right, level - 1);
+    	}
     }
     
     
