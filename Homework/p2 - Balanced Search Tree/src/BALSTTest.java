@@ -46,20 +46,27 @@ public class BALSTTest {
                 fail("insert to right child of root does not work");
             
             bst.insert(30, "30");
-            if (!bst.getKeyAtRoot().equals(10)) 
-                fail("inserting 30 changed root");
-                        
-            if (!bst.getKeyOfRightChildOf(20).equals(30)) 
-                fail("inserting 30 as right child of 20");
+            // Changing BST tests to RBT tests
+            
+            assert(bst.getKeyAtRoot() == 20);
+            assert(bst.getKeyOfRightChildOf(20) == 30);
+//            if (!bst.getKeyAtRoot().equals(10)) 
+//                fail("inserting 30 changed root");
+//                        
+//            if (!bst.getKeyOfRightChildOf(20).equals(30)) 
+//                fail("inserting 30 as right child of 20");
 
             // IF rebalancing is working,
             // the tree should have 20 at the root
             // and 10 as its left child and 30 as its right child
 
-            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(10));
-            Assert.assertEquals(bst.getKeyOfRightChildOf(10), Integer.valueOf(20));
-            Assert.assertEquals(bst.getKeyOfRightChildOf(20), Integer.valueOf(30));
 
+//            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(10));
+//            Assert.assertEquals(bst.getKeyOfRightChildOf(10), Integer.valueOf(20));
+//            Assert.assertEquals(bst.getKeyOfRightChildOf(20), Integer.valueOf(30));
+            
+            assert(bst.getKeyOfLeftChildOf(20) == 10);
+            
             bst.print();
             
         } catch (Exception e) {
@@ -85,20 +92,24 @@ public class BALSTTest {
                 fail("insert to left child of root does not work");
             
             bst.insert(10, "10");
-            if (!bst.getKeyAtRoot().equals(30)) 
-                fail("inserting 10 changed root");
-
-            if (!bst.getKeyOfLeftChildOf(20).equals(10)) 
-                fail("inserting 10 as left child of 20");
+            assert(bst.getKeyAtRoot() == 20);
+            assert(bst.getKeyOfRightChildOf(20) == 30);
+//            if (!bst.getKeyAtRoot().equals(30)) 
+//                fail("inserting 10 changed root");
+//
+//            if (!bst.getKeyOfLeftChildOf(20).equals(10)) 
+//                fail("inserting 10 as left child of 20");
 
             // IF rebalancing is working,
             // the tree should have 20 at the root
             // and 10 as its left child and 30 as its right child
 
-            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(30));
-            Assert.assertEquals(bst.getKeyOfLeftChildOf(30), Integer.valueOf(20));
-            Assert.assertEquals(bst.getKeyOfLeftChildOf(20), Integer.valueOf(10));
-
+//            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(30));
+//            Assert.assertEquals(bst.getKeyOfLeftChildOf(30), Integer.valueOf(20));
+//            Assert.assertEquals(bst.getKeyOfLeftChildOf(20), Integer.valueOf(10));
+            
+            assert(bst.getKeyOfLeftChildOf(20) == 10);
+            
             bst.print();
             
         } catch (Exception e) {
@@ -127,20 +138,24 @@ public class BALSTTest {
             Assert.assertEquals(bst.getKeyOfRightChildOf(10),Integer.valueOf(30));
             
             bst.insert(20, "20");
-            if (!bst.getKeyAtRoot().equals(10)) 
-                fail("inserting 20 changed root");
-
-            if (!bst.getKeyOfLeftChildOf(30).equals(20)) 
-                fail("inserting 20 as left child of 30");
+            assert(bst.getKeyAtRoot() == 20);
+            assert(bst.getKeyOfRightChildOf(20) == 30);
+//            if (!bst.getKeyAtRoot().equals(10)) 
+//                fail("inserting 20 changed root");
+//
+//            if (!bst.getKeyOfLeftChildOf(30).equals(20)) 
+//                fail("inserting 20 as left child of 30");
 
             // IF rebalancing is working,
             // the tree should have 20 at the root
             // and 10 as its left child and 30 as its right child
 
-            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(10));
-            Assert.assertEquals(bst.getKeyOfRightChildOf(10), Integer.valueOf(30));
-            Assert.assertEquals(bst.getKeyOfLeftChildOf(30), Integer.valueOf(20));
-
+//            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(10));
+//            Assert.assertEquals(bst.getKeyOfRightChildOf(10), Integer.valueOf(30));
+//            Assert.assertEquals(bst.getKeyOfLeftChildOf(30), Integer.valueOf(20));
+            
+            assert(bst.getKeyOfLeftChildOf(20) == 10);
+            
             bst.print();
             
         } catch (Exception e) {
@@ -168,19 +183,23 @@ public class BALSTTest {
                 fail("insert to left child of root does not work");
             
             bst.insert(20, "20");
-            if (!bst.getKeyAtRoot().equals(30)) 
-                fail("inserting 10 changed root");
-
-            if (!bst.getKeyOfRightChildOf(10).equals(20)) 
-                fail("inserting 20 as right child of 10");
+            assert(bst.getKeyAtRoot() == 20);
+            assert(bst.getKeyOfRightChildOf(20) == 30);
+//            if (!bst.getKeyAtRoot().equals(30)) 
+//                fail("inserting 20 changed root");
+//
+//            if (!bst.getKeyOfRightChildOf(10).equals(20)) 
+//                fail("inserting 20 as right child of 10");
 
             // the tree should have 30 at the root
             // and 10 as its left child and 20 as 10's right child
 
-            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(30));
-            Assert.assertEquals(bst.getKeyOfLeftChildOf(30), Integer.valueOf(10));
-            Assert.assertEquals(bst.getKeyOfRightChildOf(10), Integer.valueOf(20));
-
+//            Assert.assertEquals(bst.getKeyAtRoot(), Integer.valueOf(30));
+//            Assert.assertEquals(bst.getKeyOfLeftChildOf(30), Integer.valueOf(10));
+//            Assert.assertEquals(bst.getKeyOfRightChildOf(10), Integer.valueOf(20));
+            
+            assert(bst.getKeyOfLeftChildOf(20) == 10);
+            
             bst.print();
             
         } catch (Exception e) {
