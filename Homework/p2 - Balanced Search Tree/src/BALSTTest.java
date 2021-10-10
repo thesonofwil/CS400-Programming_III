@@ -558,4 +558,123 @@ public class BALSTTest {
     		fail( "Unexpected exception: "+e.getMessage());
 		}
 	}
+	
+	@Test
+	void testBST_023_preorder_traversal() {
+		List<Integer> expected = Arrays.asList(14, 7, 1, 11, 20, 18, 23, 29);
+		List<Integer> list = new ArrayList<>();
+		
+		try {
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20"); 
+    		bst.insert(29, "29");
+    		list = bst.getPreOrderTraversal();
+    		assert(list.size() == expected.size());
+    		for (int i = 0; i < list.size(); i++) {
+    			assert(list.get(i) == expected.get(i));
+    		}
+		} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage());
+		}
+	}
+	
+	@Test
+	void testBST_024_postorder_traversal() {
+		List<Integer> expected = Arrays.asList(1, 11, 7, 18, 29, 23, 20, 14);
+		List<Integer> list = new ArrayList<>();
+		
+		try {
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20"); 
+    		bst.insert(29, "29");
+    		list = bst.getPostOrderTraversal();
+    		assert(list.size() == expected.size());
+    		for (int i = 0; i < list.size(); i++) {
+    			assert(list.get(i) == expected.get(i));
+    		}
+		} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage());
+		}
+	}
+	
+	@Test
+	void testBST_025_levelorder_traversal() {
+		List<Integer> expected = Arrays.asList(14, 7, 20, 1, 11, 18, 23, 29);
+		List<Integer> list = new ArrayList<>();
+		
+		try {
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20"); 
+    		bst.insert(29, "29");
+    		list = bst.getLevelOrderTraversal();
+    		assert(list.size() == expected.size());
+    		for (int i = 0; i < list.size(); i++) {
+    			assert(list.get(i) == expected.get(i));
+    		}
+		} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage());
+		}
+	}
+	
+	@Test
+	void testBST_026_remove_empty() {
+		try { 
+			assert(!bst.remove(10)); // also tests contains 
+			assert(bst.numKeys() == 0);
+		} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage());
+		}
+	}
+	
+	@Test
+	void testBST_027_insert_remove_all() {
+		try {
+    		bst.insert(7, "7");
+    		bst.insert(14, "14");
+    		bst.insert(18, "18");
+    		bst.insert(23, "23");
+    		bst.insert(1, "1");
+    		bst.insert(11, "11");
+    		bst.insert(20, "20"); 
+    		assert(bst.remove(20));
+    		assert(bst.remove(7));
+    		assert(bst.getKeyOfLeftChildOf(14) == 1);
+    		assert(bst.getKeyOfRightChildOf(14) == 18);
+    		bst.remove(14); // Remove root
+    		assert(bst.getKeyAtRoot() == 11);
+    		assert(bst.remove(18));
+    		assert(bst.getKeyOfRightChildOf(11) == 23);
+    		assert(bst.remove(11));
+    		assert(bst.getKeyAtRoot() == 1);
+    		assert(bst.getKeyOfRightChildOf(1) == 23); // Only two nodes at this point 
+    		assert(bst.remove(23));
+    		assert(bst.getKeyOfRightChildOf(1) == null);
+    		assert(bst.remove(1));
+    		assert(!bst.contains(1));
+    		assert(bst.numKeys() == 0);
+    		assert(bst.getHeight() == 0);
+		} catch (Exception e) {
+    		e.printStackTrace();
+    		fail( "Unexpected exception: "+e.getMessage());
+		}
+	}
 }
