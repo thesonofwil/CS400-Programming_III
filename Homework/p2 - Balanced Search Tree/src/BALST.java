@@ -28,7 +28,7 @@ import java.util.List;
 public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     
     // Private fields of BST
-    private BSTNode<K, V> root;
+    private RBTNode<K, V> root;
     private int numKeys;
 	
 	/**
@@ -39,13 +39,13 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	 * @param <K> A unique key
 	 * @param <V> The key's associated value
 	 */
-	private class BSTNode<K,V> {
+	private class RBTNode<K,V> {
 	    
 	    K key;
 	    V value;
-	    BSTNode<K,V> left;
-	    BSTNode<K,V> right;
-	    BSTNode<K, V> parent;
+	    RBTNode<K,V> left;
+	    RBTNode<K,V> right;
+	    RBTNode<K, V> parent;
 	    char color;
 
 	    /**
@@ -56,7 +56,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	     * @param leftChild
 	     * @param rightChild
 	     */
-	    BSTNode(K key, V value, BSTNode<K,V>  leftChild, BSTNode<K,V> rightChild, BSTNode<K,V> parent, char color) {
+	    RBTNode(K key, V value, RBTNode<K,V>  leftChild, RBTNode<K,V> rightChild, RBTNode<K,V> parent, char color) {
 	        this.key = key; 
 	        this.value = value;
 	        this.left = leftChild;
@@ -66,7 +66,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
 	    }
 	    
 	    // Constructs a node with no children
-	    BSTNode(K key, V value) { this(key,value,null,null,null,'b'); }
+	    RBTNode(K key, V value) { this(key,value,null,null,null,'b'); }
 	}
 	
 	/**
@@ -106,7 +106,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		throw new IllegalNullKeyException("Cannot handle null key");
     	}
     	
-    	BSTNode<K, V> parent = find(key);
+    	RBTNode<K, V> parent = find(key);
     	
     	if (parent == null) {
     		throw new KeyNotFoundException("Key not found");
@@ -135,7 +135,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     		throw new IllegalNullKeyException("Cannot handle null key");
     	}
     	
-    	BSTNode<K, V> parent = find(key);
+    	RBTNode<K, V> parent = find(key);
     	
     	if (parent == null) {
     		throw new KeyNotFoundException("Key not found");
@@ -185,7 +185,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param n the node to start from
      * @return height of the tree
      */
-    public int getHeight(BSTNode<K, V> n) {
+    public int getHeight(RBTNode<K, V> n) {
     	if (n == null) {
     		return 0;
     	}
@@ -215,7 +215,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param list list to store keys in 
      * @param root the node to traverse from
      */
-    private void inOrderTraverse(List<K> list, BSTNode<K, V> root) {
+    private void inOrderTraverse(List<K> list, RBTNode<K, V> root) {
     	// Base case
     	if (root == null) {
     		return;
@@ -248,7 +248,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param list list to store keys in 
      * @param root the node to traverse from
      */
-    private void preOrderTraverse(List<K> list, BSTNode<K, V> root) {
+    private void preOrderTraverse(List<K> list, RBTNode<K, V> root) {
     	// Base case
     	if (root == null) {
     		return;
@@ -281,7 +281,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param list list to store keys in 
      * @param root the node to traverse from
      */
-    private void postOrderTraverse(List<K> list, BSTNode<K, V> root) {
+    private void postOrderTraverse(List<K> list, RBTNode<K, V> root) {
     	// Base case
     	if (root == null) {
     		return;
@@ -322,7 +322,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param root the node to traverse from
      * @param level the level at which to get nodes from tree
      */
-    private void inOrderTraverse(List<K> list, BSTNode<K, V> root, int level) {
+    private void inOrderTraverse(List<K> list, RBTNode<K, V> root, int level) {
     	if (root == null) {
     		return;
     	}
@@ -365,17 +365,17 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param cmp used to update parent/left/right pointers
      * @throws DuplicateKeyException if key already exists in tree
      */
-    private void insert(BSTNode<K, V> node, K key, V value, BSTNode<K, V> parent, int cmp) throws DuplicateKeyException {
+    private void insert(RBTNode<K, V> node, K key, V value, RBTNode<K, V> parent, int cmp) throws DuplicateKeyException {
     	
     	// Insert at root if there are no nodes
     	if (root == null) {
-    		root = new BSTNode<K, V>(key, value, null, null, null, 'b');
+    		root = new RBTNode<K, V>(key, value, null, null, null, 'b');
     		return;
     	}
     	
     	// Base case - create new red node and update pointers
     	if (node == null) {
-        	BSTNode<K,V> leaf = new BSTNode<K, V>(key, value, null, null, parent,'r');
+        	RBTNode<K,V> leaf = new RBTNode<K, V>(key, value, null, null, parent,'r');
         	if (cmp < 0) {
         		parent.left = leaf;
         	} else if (cmp > 0) {
@@ -419,7 +419,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	return true;
     }
     
-    private BSTNode<K, V> remove(BSTNode<K, V> n, K key) throws IllegalNullKeyException {
+    private RBTNode<K, V> remove(RBTNode<K, V> n, K key) throws IllegalNullKeyException {
     	
     	if (key == null) {
     		throw new IllegalNullKeyException("Cannot handle null key");
@@ -445,7 +445,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
         	
         	// Case 3: n has two children
         	// Get In-order predecessor key by finding largest key in the left subtree of node
-        	BSTNode<K, V> predecessor = find(max(n.left).key); 
+        	RBTNode<K, V> predecessor = find(max(n.left).key); 
         	n.key = predecessor.key;
         	n.value = predecessor.value;
         	n.left = remove(n.left, predecessor.key);
@@ -550,7 +550,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	print(root, space, height);    	
     }
     
-    public void print(BSTNode<K, V> n, int space, int height)
+    public void print(RBTNode<K, V> n, int space, int height)
     {
         // Base case
         if (n == null) {
@@ -577,18 +577,18 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     }
     
     /**
-     * Finds the BSTNode in the BST given the key.
+     * Finds the RBTNode in the BST given the key.
      * 
      * @param k they key to search
-     * @return BSTNode that has the key. Null if the key isn't there
+     * @return RBTNode that has the key. Null if the key isn't there
      * @throws IllegalNullKeyException if key is null
      */
-    private BSTNode<K, V> find(K k) throws IllegalNullKeyException {
+    private RBTNode<K, V> find(K k) throws IllegalNullKeyException {
     	if (k == null) {
     		throw new IllegalNullKeyException("Cannot handle null key");
     	} 
     	
-    	BSTNode<K, V> n = root;
+    	RBTNode<K, V> n = root;
     	while (n != null) {
 	    	int cmp = k.compareTo(n.key);
 	    	if (cmp < 0) {
@@ -611,7 +611,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param n node to start from
      * @return the node with the smallest key
      */
-    private BSTNode<K, V> min(BSTNode<K, V> n) {
+    private RBTNode<K, V> min(RBTNode<K, V> n) {
     	if (n.left != null) {
     		return max(n.left);
     	}
@@ -624,7 +624,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param n node to start from
      * @return the node with the largest key
      */
-    private BSTNode<K, V> max(BSTNode<K, V> n) {
+    private RBTNode<K, V> max(RBTNode<K, V> n) {
     	if (n.right != null) {
     		return max(n.right);
     	}
@@ -637,7 +637,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * 
      * @return
      */
-    private void maintainRedProperty(BSTNode<K, V> K) {
+    private void maintainRedProperty(RBTNode<K, V> K) {
     	
     	if (K == null || K.equals(root)) {
     		return;
@@ -655,8 +655,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	if (parentSiblingIsRed(K)) {
     		recolor(K);
     	} else if (parentSiblingIsNull(K) || parentSiblingIsBlack(K)) {
-    		BSTNode<K, V> P = K.parent;
-    		BSTNode<K, V> G = P.parent;
+    		RBTNode<K, V> P = K.parent;
+    		RBTNode<K, V> G = P.parent;
     		boolean doubleRotated = false; // This determines recoloring after rotating
     		
     		// TNR depending on structures of K, P, and G
@@ -692,7 +692,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param G the grandparent of the node of interest
      * @return the sibling node of P, or null if there is none
      */
-    private BSTNode<K, V> getParentSibling(BSTNode<K, V> P, BSTNode<K, V> G) {
+    private RBTNode<K, V> getParentSibling(RBTNode<K, V> P, RBTNode<K, V> G) {
     	
     	if (G.left != null && G.left.equals(P)) {
     		return G.right;
@@ -706,15 +706,15 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param K the child node
      * @return true if the parent of the child node has no sibling
      */
-    private boolean parentSiblingIsNull(BSTNode<K, V> K) {
-    	BSTNode<K, V> P = K.parent;
+    private boolean parentSiblingIsNull(RBTNode<K, V> K) {
+    	RBTNode<K, V> P = K.parent;
     	
     	// n is already the root
     	if (P == null) {
     		return false;
     	}
     	
-    	BSTNode<K, V> G = P.parent;
+    	RBTNode<K, V> G = P.parent;
     	
     	// Parent is the root, so no sibling
     	if (G == null) {
@@ -729,15 +729,15 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param K the child node
      * @return true if the parent of the child node has a black sibling
      */
-    private boolean parentSiblingIsBlack(BSTNode<K, V> K) {
-    	BSTNode<K, V> P = K.parent;
+    private boolean parentSiblingIsBlack(RBTNode<K, V> K) {
+    	RBTNode<K, V> P = K.parent;
     	
     	// n is already the root
     	if (P == null) {
     		return false;
     	}
     	
-    	BSTNode<K, V> G = P.parent;
+    	RBTNode<K, V> G = P.parent;
     	
     	// Parent is the root, so no sibling
     	if (G == null) {
@@ -752,22 +752,22 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param n the child node
      * @return true if the parent of the child has a red sibling
      */
-    private boolean parentSiblingIsRed(BSTNode<K, V> n) {
-    	BSTNode<K, V> parent = n.parent;
+    private boolean parentSiblingIsRed(RBTNode<K, V> n) {
+    	RBTNode<K, V> parent = n.parent;
     	
     	// n is already the root
     	if (parent == null) {
     		return false;
     	}
     	
-    	BSTNode<K, V> grandparent = parent.parent;
+    	RBTNode<K, V> grandparent = parent.parent;
     	
     	// Parent is the root, so no sibling
     	if (grandparent == null) {
     		return false;
     	}
     	
-    	BSTNode<K, V> sibling = getParentSibling(parent, grandparent);
+    	RBTNode<K, V> sibling = getParentSibling(parent, grandparent);
     	
     	if (sibling == null) {
     		return false;
@@ -776,7 +776,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	return sibling.color == 'r';
     }
     
-    private boolean isOnlyChild(BSTNode<K, V> n) {
+    private boolean isOnlyChild(RBTNode<K, V> n) {
     	return (n.left == null && n.right == null);
     }
     
@@ -795,8 +795,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param G the grandparent node to rotate on
      * @return the new root which is P
      */
-    private BSTNode<K, V> rotateRight(BSTNode<K, V> G) {
-    	BSTNode<K, V> P = G.left;
+    private RBTNode<K, V> rotateRight(RBTNode<K, V> G) {
+    	RBTNode<K, V> P = G.left;
     	
     	// Rotate and update parent
     	G.left = P.right;
@@ -831,8 +831,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param G the grandparent node to rotate on
      * @return the new root which is P
      */
-    private BSTNode<K, V> rotateLeft(BSTNode<K, V> G) {
-    	BSTNode<K, V> P = G.right;
+    private RBTNode<K, V> rotateLeft(RBTNode<K, V> G) {
+    	RBTNode<K, V> P = G.right;
     	
     	G.right = P.left;
     	if (P.left != null) {
@@ -866,9 +866,9 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param G the grandparent node to rotate on
      * @return the new root which is K
      */
-    private BSTNode<K, V> rotateLeftRight(BSTNode<K, V> G) {
-    	BSTNode<K, V> P = G.left;
-    	BSTNode<K, V> K = P.right;
+    private RBTNode<K, V> rotateLeftRight(RBTNode<K, V> G) {
+    	RBTNode<K, V> P = G.left;
+    	RBTNode<K, V> K = P.right;
     	
     	rotateLeft(P);
     	rotateRight(G);	   	
@@ -888,9 +888,9 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param G the grandparent node to rotate on
      * @return the new root which is K
      */
-    private BSTNode<K, V> rotateRightLeft(BSTNode<K, V> G) {
-    	BSTNode<K, V> P = G.right;
-    	BSTNode<K, V> K = P.left;
+    private RBTNode<K, V> rotateRightLeft(RBTNode<K, V> G) {
+    	RBTNode<K, V> P = G.right;
+    	RBTNode<K, V> K = P.left;
     	
     	rotateRight(P);
     	rotateLeft(G);
@@ -917,10 +917,10 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * 
      * @param K the leaf node that was inserted
      */
-    private void recolor(BSTNode<K, V> K) {
-    	BSTNode<K, V> P = K.parent;
-    	BSTNode<K, V> G = P.parent;
-    	BSTNode<K, V> S = getParentSibling(P, G);
+    private void recolor(RBTNode<K, V> K) {
+    	RBTNode<K, V> P = K.parent;
+    	RBTNode<K, V> G = P.parent;
+    	RBTNode<K, V> S = getParentSibling(P, G);
     	
     	if (!this.root.equals(G)) {
     		G.color = 'r';
