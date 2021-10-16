@@ -308,7 +308,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	int heightTree = getHeight(root);
     	
     	for (int level = 1; level <= heightTree; level++) {
-    		inOrderTraverse(list, root, level);
+    		levelOrderTraverse(list, root, level);
     	}
     	
     	return list;
@@ -322,7 +322,7 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
      * @param root the node to traverse from
      * @param level the level at which to get nodes from tree
      */
-    private void inOrderTraverse(List<K> list, RBTNode<K, V> root, int level) {
+    private void levelOrderTraverse(List<K> list, RBTNode<K, V> root, int level) {
     	if (root == null) {
     		return;
     	}
@@ -330,8 +330,8 @@ public class BALST<K extends Comparable<K>, V> implements BALSTADT<K, V> {
     	if (level == 1) {
     		list.add(root.key);
     	} else if (level > 1) {
-    		inOrderTraverse(list, root.left, level - 1);
-    		inOrderTraverse(list, root.right, level - 1);
+    		levelOrderTraverse(list, root.left, level - 1);
+    		levelOrderTraverse(list, root.right, level - 1);
     	}
     }
     
