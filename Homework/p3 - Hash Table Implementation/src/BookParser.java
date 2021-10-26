@@ -29,7 +29,7 @@ public class BookParser {
 
                 Book bookobj = new Book(book.get(0),book.get(1),book.get(2),
                         book.get(3),book.get(4),book.get(5),book.get(6), book.get(7)); 
-                System.out.println(bookobj.toString()); 
+                //System.out.println(bookobj.toString()); 
                 bookList.add(bookobj);
 
 
