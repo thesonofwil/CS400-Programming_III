@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class BookHashTableTest {
 
     // Default name of books data file or try books_clean.csv
-    public static final String BOOKS = "books.csv"; 
+    public static final String BOOKS = "books_clean.csv"; 
 
     // Empty hash tables that can be used by tests
     static BookHashTable bookObject;

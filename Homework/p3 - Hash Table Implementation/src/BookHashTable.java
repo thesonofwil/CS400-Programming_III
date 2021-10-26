@@ -32,11 +32,55 @@ public class BookHashTable implements HashTableADT<String, Book> {
     
     
     // Private fields of hash table
-    private BookHashTable[] table;
+    private Bucket[] table;
     private int tableSize;
     private double loadFactor;
     private double loadFactorThreshold;
     private int numKeys;
+    
+    /**
+     * Bucket inner class. Each index of the hash table will contain a bucket
+     * that has nodes organized in a sorted linked list
+     * 
+     * @author Wilson Tjoeng
+     *
+     */
+    private class Bucket {
+    	
+    	// Private fields of Bucket
+    	Node head;
+    	
+    	/**
+    	 * When called, constructs an empty bucket
+    	 */
+    	Bucket() {
+    		this.head = null;
+    	}
+    }
+    
+    /**
+     * Node inner-inner class to hold key-value pairs.
+     * 
+     * @author Wilson Tjoeng
+     *
+     */
+    private class Node {
+    	String key;
+    	Book book;
+    	Node next;
+    		
+    	/**
+    	 * Constructs a new node
+    	 * 
+    	 * @param K unique key to hold
+    	 * @param book associated Book value
+    	 */
+    	Node (String K, Book book) {
+    		this.key = K;
+    		this.book = book;
+    		this.next = null;
+    		}
+    	}
     
     /**
      * REQUIRED default no-arg constructor
@@ -57,13 +101,44 @@ public class BookHashTable implements HashTableADT<String, Book> {
         this.tableSize = initialCapacity;
         this.loadFactorThreshold = loadFactorThreshold;
         this.numKeys = 0;
-        this.table = new BookHashTable[tableSize]; // Initialize empty list
+        this.table = new Bucket[tableSize]; // Initialize list of null buckets
     }
 
 	@Override
 	public void insert(String key, Book value) throws IllegalNullKeyException, DuplicateKeyException {
 		// TODO Auto-generated method stub
+		rehash(); // if needed, expand and rehash table
+		insertIntoBucket(key, value);
 		
+		this.numKeys++;
+		// Check for case when n is already in table
+	
+	}
+	
+	/**
+	 * Insert a node into a bucket's linked list. The linked list is in sorted order.
+	 * 
+	 * @param key unique key to insert
+	 * @param value associated value of key
+	 */
+	private void insertIntoBucket(String key, Book value) {
+		int hashIndex = getHashIndex(key);
+		Node newNode = new Node(key, value);
+		
+		// If bucket is empty, insert at head
+		if (this.table[hashIndex].head == null) {
+			this.table[hashIndex].head = newNode;
+		} else { // Insert at sorted position
+			Node curr = this.table[hashIndex].head;
+			int cmp = key.compareTo(curr.key); // Compare key to insert with head
+			
+			// Loop through Bucket's linked list and insert in sorted position
+			while (curr.next != null && (key.compareTo(curr.next.key) > 0)) {
+				curr = curr.next;
+			}
+			newNode.next = curr.next;
+			curr.next = newNode;
+		}
 	}
 
 	@Override
@@ -100,6 +175,18 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	}
 	
 	/**
+	 * Hash function to calculate index. Calculates using Java's hashcode % 
+	 * table size
+	 * 
+	 * @param key the key to calculate the hash index for 
+	 * @return hash index
+	 */
+	private int getHashIndex(String key) {
+		int hash = Math.abs(hashCode());
+		return hash % tableSize;
+	}
+	
+	/**
 	 * Calculates the load factor of the hash table
 	 * 
 	 * @return the load factor in decimal format
@@ -114,15 +201,45 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	 * 
 	 * @return a bigger hash table, or the original table if load factor is below threshold
 	 */
-	private BookHashTable[] resizeTable() {
+	private void rehash() {
 		
 		// Don't do anything if below load factor threshold
 		if (getLoadFactor() <= loadFactorThreshold) {
-			return table;
+			return;
 		}
 		
-		// TODO implement resize
-		return table;
+		int newSize = getNextPrime(tableSize * 2);
+		Bucket[] newTable = new Bucket[newSize]; 
+		
+		for (int i = 0; i < this.tableSize; i++) {
+			
+			// TODO: Insert from original table to new table
+		}
+		
+		// Update fields
+		this.tableSize = newSize;
+		this.table = newTable;
+	}
+	
+	private int getNextPrime(int num) {
+		
+		boolean primeFound = false;
+		
+		// Check if num is divisible by any integer from 2 to num - 1.
+		// If it is, increment num
+		while (!primeFound) {
+			num++;
+			for (int i = 2; i < num; i++) {
+				if (num % i == 0) {
+					break;
+				}
+				if (i == num - 1) { // if we've checked every divisor
+					primeFound = true;
+				}
+			}
+		}
+		
+		return num;
 	}
 	
     // TODO: add all unimplemented methods so that the class can compile
