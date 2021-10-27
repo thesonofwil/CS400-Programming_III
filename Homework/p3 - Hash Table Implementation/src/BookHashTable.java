@@ -126,7 +126,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		Node newNode = new Node(key, value);
 		
 		// If bucket is empty, insert at head
-		if (this.table[hashIndex].head == null) {
+		if (this.table[hashIndex] == null) {
 			this.table[hashIndex].head = newNode;
 		} else { // Insert at sorted position
 			Node curr = this.table[hashIndex].head;
@@ -149,8 +149,17 @@ public class BookHashTable implements HashTableADT<String, Book> {
 
 	@Override
 	public Book get(String key) throws IllegalNullKeyException, KeyNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+		if (key == null) {
+			throw new IllegalNullKeyException();
+		}
+		
+		Node node = find(key);
+		
+		if (node == null) {
+			throw new KeyNotFoundException();
+		}
+		
+		return node.book;
 	}
 
 	@Override
@@ -185,6 +194,39 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		int hash = Math.abs(hashCode());
 		return hash % tableSize;
 	}
+	
+	/**
+	 * Returns the node with a key of interest in the hash table by looping through the 
+	 * bucket at the key's hash index i.e. where it would be even if not there. 
+	 * 
+	 * @param key key to search for 
+	 * @return the node if key is present; null if not
+	 */
+	private Node find(String key) throws IllegalNullKeyException {
+		if (key == null) {
+			throw new IllegalNullKeyException();
+		}
+		
+		int hashIndex = getHashIndex(key);
+		
+		Node curr = this.table[hashIndex].head; // Get bucket's head at index
+		
+		// Check if head is the key of interest
+		if (curr.key.compareTo(key) == 0) {
+			return curr;
+		}
+		
+		// Else loop through linked list
+		while (curr.next != null && (key.compareTo(curr.next.key) >= 0)) {
+			if (key.compareTo(curr.next.key) == 0) {
+				return curr.next;
+			}
+			curr = curr.next;
+		}
+		
+		return null; // If node is not found
+	}
+
 	
 	/**
 	 * Calculates the load factor of the hash table
