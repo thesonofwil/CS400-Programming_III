@@ -71,7 +71,6 @@ public class BookHashTable implements HashTableADT<String, Book> {
     private class Node {
     	String key;
     	Book book;
-    	Node head;
     	Node next;
     		
     	/**
@@ -133,9 +132,8 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		// If bucket is empty, insert at head
 		if (this.table[hashIndex] == null) {
 			this.table[hashIndex] = newNode;
-			this.table[hashIndex].head = newNode;
 		} else { // Insert at sorted position
-			Node curr = this.table[hashIndex].head;
+			Node curr = this.table[hashIndex];
 			
 			// Loop through Bucket's linked list and insert in sorted position
 			while (curr.next != null && (key.compareTo(curr.next.key) > 0)) {
