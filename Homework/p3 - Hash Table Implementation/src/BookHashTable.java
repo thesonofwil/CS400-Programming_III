@@ -32,7 +32,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
     
     
     // Private fields of hash table
-    private Bucket[] table;
+    private Node[] table;
     private int tableSize;
     private double loadFactor;
     private double loadFactorThreshold;
@@ -45,18 +45,22 @@ public class BookHashTable implements HashTableADT<String, Book> {
      * @author Wilson Tjoeng
      *
      */
-    private class Bucket {
-    	
-    	// Private fields of Bucket
-    	Node head;
-    	
-    	/**
-    	 * When called, constructs an empty bucket
-    	 */
-    	Bucket() {
-    		this.head = null;
-    	}
-    }
+//    private class Bucket {
+//    	
+//    	// Private fields of Bucket
+//    	Node head;
+//    	
+//    	/**
+//    	 * When called, constructs an empty bucket
+//    	 */
+//    	Bucket() {
+//    		this.head = null;
+//    	}
+//    	
+//    	Bucket(Node node) {
+//    		this.head = node;
+//    	}
+//    }
     
     /**
      * Node inner-inner class to hold key-value pairs.
@@ -67,6 +71,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
     private class Node {
     	String key;
     	Book book;
+    	Node head;
     	Node next;
     		
     	/**
@@ -101,7 +106,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
         this.tableSize = initialCapacity;
         this.loadFactorThreshold = loadFactorThreshold;
         this.numKeys = 0;
-        this.table = new Bucket[tableSize]; // Initialize list of null buckets
+        this.table = new Node[tableSize]; // Initialize list of null buckets
     }
 
 	@Override
@@ -127,10 +132,10 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		
 		// If bucket is empty, insert at head
 		if (this.table[hashIndex] == null) {
+			this.table[hashIndex] = newNode;
 			this.table[hashIndex].head = newNode;
 		} else { // Insert at sorted position
 			Node curr = this.table[hashIndex].head;
-			int cmp = key.compareTo(curr.key); // Compare key to insert with head
 			
 			// Loop through Bucket's linked list and insert in sorted position
 			while (curr.next != null && (key.compareTo(curr.next.key) > 0)) {
@@ -234,7 +239,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	 * @return the load factor in decimal format
 	 */
 	private double getLoadFactor() {
-		return numKeys / tableSize;
+		return (double) numKeys / (double) tableSize;
 	}
 	
 	/**
@@ -251,16 +256,36 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		}
 		
 		int newSize = getNextPrime(tableSize * 2);
-		Bucket[] newTable = new Bucket[newSize]; 
+		Node[] oldTable = this.table; // Save a temp copy of old table
+		Node[] newTable = new Node[newSize];
 		
-		for (int i = 0; i < this.tableSize; i++) {
-			
-			// TODO: Insert from original table to new table
-		}
-		
-		// Update fields
+		this.table = newTable; // Assign reference to new table
 		this.tableSize = newSize;
-		this.table = newTable;
+		
+		// Go through old table and rehash all keys into new table
+		int count = 0; // Makes this more efficient
+		for (int i = 0; i < oldTable.length; i++) {
+			// TODO: Insert from original table to new table
+			if (oldTable[i] == null) {
+				continue;
+			}
+			
+			// No need to rehash anymore if we got all the keys
+			if (count == this.numKeys) {
+				break;
+			}
+			
+			Node curr = oldTable[i]; // Assign to head in each index 
+			while (curr != null) {
+				try {
+					insert(curr.key, curr.book); // Insert into new table
+					count++;
+					curr = curr.next;
+				} catch (IllegalNullKeyException | DuplicateKeyException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	private int getNextPrime(int num) {
