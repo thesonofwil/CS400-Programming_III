@@ -111,6 +111,11 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	@Override
 	public void insert(String key, Book value) throws IllegalNullKeyException, DuplicateKeyException {
 		// TODO Auto-generated method stub
+		// Check table first if key is already present
+		if (find(key) != null) {
+			throw new DuplicateKeyException();
+		}
+		
 		rehash(); // if needed, expand and rehash table
 		insertIntoBucket(key, value);
 		
@@ -143,13 +148,61 @@ public class BookHashTable implements HashTableADT<String, Book> {
 			curr.next = newNode;
 		}
 	}
-
+	
+	/**
+	 * If key is found, remove the key,value pair from the data structure and 
+	 * decrease number of keys. If key is null, throw IllegalNullKeyException.
+     *
+     * @param key the key to remove from the hash table 
+     * @exception IllegalNullKeyException if key is null
+     * @return true if the key was found; false otherwise
+	 */
 	@Override
 	public boolean remove(String key) throws IllegalNullKeyException {
-		// TODO Auto-generated method stub
-		return false;
+		if (key == null) {
+			throw new IllegalNullKeyException();
+		}
+		
+		int i = getHashIndex(key);
+		Node curr = this.table[i];
+		
+		// Bucket is empty so key is not there
+		if (curr == null) {
+			return false;
+		}
+		
+		// Key is located at head, so assign new head
+		if (curr.key.equals(key)) {
+			this.table[i] = curr.next;
+		} else { // Loop through list to find key
+			while(curr != null) {
+				Node prev = curr;
+				curr = curr.next;
+				
+				// Key not found if we've reached the end of the list or are past sorted order
+				if (curr == null || key.compareTo(curr.key) > 0) {
+					return false;
+				} else if (curr.key.equals(key)) {
+					prev.next = curr.next;
+					curr.next = null;
+				}
+			}
+		}
+		this.numKeys--;
+		return true;
 	}
-
+	
+	/**
+	 * Returns the value associated with the specified key
+     * Does not remove key or decrease number of keys
+     * If key is null, throw IllegalNullKeyException 
+     * If key is not found, throw KeyNotFoundException
+     * 
+     * @param key the key to retrieve the value for 
+     * @exception IllegalNullKeyException if key is null
+     * @exception KeyNotFoundException if the key to search for isn't in the hash table
+     * @return the book object associated with the key
+	 */
 	@Override
 	public Book get(String key) throws IllegalNullKeyException, KeyNotFoundException {
 		if (key == null) {
@@ -179,11 +232,25 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	public int getCapacity() {
 		return this.tableSize;
 	}
-
+	
+	/**
+	 * Returns the collision resolution scheme used for this hash table.
+     * implement this ADT with one of the following collision resolution strategies
+     * and implement this method to return an integer to indicate which strategy.
+     *
+     * 1 OPEN ADDRESSING: linear probe
+     * 2 OPEN ADDRESSING: quadratic probe
+     * 3 OPEN ADDRESSING: double hashing
+     * 4 CHAINED BUCKET: array list of array lists
+     * 5 CHAINED BUCKET: array list of linked lists
+     * 6 CHAINED BUCKET: array list of binary search trees
+     * 7 CHAINED BUCKET: linked list of array lists
+     * 8 CHAINED BUCKET: linked list of linked lists
+     * 9 CHAINED BUCKET: linked list of of binary search trees
+	 */
 	@Override
 	public int getCollisionResolutionScheme() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 5;
 	}
 	
 	/**
@@ -202,7 +269,8 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	 * Returns the node with a key of interest in the hash table by looping through the 
 	 * bucket at the key's hash index i.e. where it would be even if not there. 
 	 * 
-	 * @param key key to search for 
+	 * @param key key to search for
+	 * @exception IllegalNullKeyException if key is null 
 	 * @return the node if key is present; null if not
 	 */
 	private Node find(String key) throws IllegalNullKeyException {
@@ -212,10 +280,15 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		
 		int hashIndex = getHashIndex(key);
 		
-		Node curr = this.table[hashIndex].head; // Get bucket's head at index
+		Node curr = this.table[hashIndex]; // Get the head of list at index
+		
+		// If bucket is empty, then the key isn't there
+		if (curr == null) {
+			return null;
+		}
 		
 		// Check if head is the key of interest
-		if (curr.key.compareTo(key) == 0) {
+		if (curr.key.equals(key)) {
 			return curr;
 		}
 		
@@ -254,6 +327,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		}
 		
 		int newSize = getNextPrime(tableSize * 2);
+		int keys = this.numKeys; 
 		Node[] oldTable = this.table; // Save a temp copy of old table
 		Node[] newTable = new Node[newSize];
 		
@@ -262,14 +336,13 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		
 		// Go through old table and rehash all keys into new table
 		int count = 0; // Makes this more efficient
+		this.numKeys = 0; // Reset numKeys because we'll be inserting
 		for (int i = 0; i < oldTable.length; i++) {
-			// TODO: Insert from original table to new table
 			if (oldTable[i] == null) {
 				continue;
 			}
-			
 			// No need to rehash anymore if we got all the keys
-			if (count == this.numKeys) {
+			if (count == keys) {
 				break;
 			}
 			
@@ -286,6 +359,12 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		}
 	}
 	
+	/**
+	 * Given an integer, finds the next prime number after it
+	 * 
+	 * @param num the integer to find the next prime number for
+	 * @return the next prime number of num
+	 */
 	private int getNextPrime(int num) {
 		
 		boolean primeFound = false;
