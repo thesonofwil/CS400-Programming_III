@@ -74,6 +74,12 @@ public class BookHashTableTest {
         }
     }
 
+    /**
+     * File: books_clean.csv
+     * get returns book from list that the rows in the file are added to
+     * getKey returns ISBN 13
+     */
+    
     /** IMPLEMENTED AS EXAMPLE FOR YOU
      * Tests that a HashTable is empty upon initialization
      */
@@ -125,4 +131,71 @@ public class BookHashTableTest {
         assertTrue(cap2 > cap1 & cap1 ==2);
     }
     
+    @Test
+    void test003_Insert_Simple() throws IllegalNullKeyException, DuplicateKeyException,
+    KeyNotFoundException {
+    	String key = bookTable.get(0).getKey();
+    	Book book = bookTable.get(0);
+    	
+    	bookObject.insert(key, book);
+    	assert(bookObject.numKeys() == 1);
+    	assert(bookObject.get(key).equals(book));
+    }
+    
+    @Test
+    void test004_Insert_Throws_Duplicate_Key_Exception() {
+    	try {
+    		bookObject.insert(bookTable.get(0).getKey(), bookTable.get(0));
+    		bookObject.insert(bookTable.get(0).getKey(), bookTable.get(1));
+    		fail("Duplicate key exception not thrown");
+    	} catch (DuplicateKeyException e) {
+    		assert(bookObject.numKeys() == 1);
+    		assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	} catch (Exception e) {
+    		fail("Duplicate key exception not thrown");
+    	}
+    }
+    
+    @Test
+    void test005_Insert_Throws_Null_Key_Exception() {
+    	try {
+    		bookObject.insert(null, bookTable.get(0));
+    		fail("Illegal null key exception not thrown");
+    	} catch (IllegalNullKeyException e) {
+    		assert(bookObject.numKeys() == 0);
+    		assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	} catch (Exception e) {
+    		fail("Illegal null key exception not thrown");
+    	}
+    }
+    
+    @Test
+    void test006_Insert_Multiple_Keys() throws IllegalNullKeyException, DuplicateKeyException,
+    KeyNotFoundException {
+    	String key1 = bookTable.get(0).getKey();
+    	String key2 = bookTable.get(1).getKey();
+    	String key3 = bookTable.get(2).getKey();
+    	
+    	Book book1 = bookTable.get(0);
+    	Book book2 = bookTable.get(1);
+    	Book book3 = bookTable.get(3);
+    	
+    	assert(bookObject.numKeys() == 0);
+    	assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	
+    	bookObject.insert(key1, book1);
+    	assert(bookObject.numKeys() == 1);
+    	assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	assert(bookObject.get(key1).equals(book1));
+    	
+    	bookObject.insert(key2, book2);
+    	assert(bookObject.numKeys() == 2);
+    	assert(bookObject.getCapacity() == 5); // next prime of 2 * Initial Capacity
+    	assert(bookObject.get(key2).equals(book2));
+    	
+    	bookObject.insert(key3, book3);
+    	assert(bookObject.numKeys() == 3);
+    	assert(bookObject.getCapacity() == 5);
+    	assert(bookObject.get(key1).equals(book3));  	
+    }
 }
