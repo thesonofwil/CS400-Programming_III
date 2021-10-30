@@ -185,6 +185,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 				} else if (curr.key.equals(key)) {
 					prev.next = curr.next;
 					curr.next = null;
+					break;
 				}
 			}
 		}
@@ -261,7 +262,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	 * @return hash index
 	 */
 	private int getHashIndex(String key) {
-		int hash = Math.abs(hashCode());
+		int hash = Math.abs(key.hashCode());
 		return hash % tableSize;
 	}
 	
