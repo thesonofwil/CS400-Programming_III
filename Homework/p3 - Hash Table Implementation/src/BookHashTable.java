@@ -34,7 +34,6 @@ public class BookHashTable implements HashTableADT<String, Book> {
     // Private fields of hash table
     private Node[] table;
     private int tableSize;
-    private double loadFactor;
     private double loadFactorThreshold;
     private int numKeys;
     
@@ -98,19 +97,32 @@ public class BookHashTable implements HashTableADT<String, Book> {
     /**
      * Creates an empty hash table with the specified capacity 
      * and load factor.
+     * 
      * @param initialCapacity number of elements table should hold at start.
      * @param loadFactorThreshold the ratio of items/capacity that causes table to resize and rehash
+     * @exception IllegalArgumentException thrown if either parameter is negative
      */
-    public BookHashTable(int initialCapacity, double loadFactorThreshold) {
+    public BookHashTable(int initialCapacity, double loadFactorThreshold) 
+    		throws IllegalArgumentException {
+    	if (initialCapacity < 0 || loadFactorThreshold < 0) {
+    		throw new IllegalArgumentException("Capacity and/or threshold cannot be negative");
+    	}
         this.tableSize = initialCapacity;
         this.loadFactorThreshold = loadFactorThreshold;
         this.numKeys = 0;
         this.table = new Node[tableSize]; // Initialize list of null buckets
     }
-
+    
+    /**
+     * Add the key,value pair to the hash table and increase the number of keys.
+     * 
+     * @param key the key to insert
+     * @param value the Book object paired to the key
+     * @exception IllegalNullKeyExcpetion thrown if key is null
+     * @exception DuplicateKeyException thrown if key is already in hash table 
+     */
 	@Override
 	public void insert(String key, Book value) throws IllegalNullKeyException, DuplicateKeyException {
-		// TODO Auto-generated method stub
 		// Check table first if key is already present
 		if (find(key) != null) {
 			throw new DuplicateKeyException();
@@ -154,7 +166,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	 * decrease number of keys. If key is null, throw IllegalNullKeyException.
      *
      * @param key the key to remove from the hash table 
-     * @exception IllegalNullKeyException if key is null
+     * @exception IllegalNullKeyException thrown if key is null
      * @return true if the key was found; false otherwise
 	 */
 	@Override
@@ -200,8 +212,8 @@ public class BookHashTable implements HashTableADT<String, Book> {
      * If key is not found, throw KeyNotFoundException
      * 
      * @param key the key to retrieve the value for 
-     * @exception IllegalNullKeyException if key is null
-     * @exception KeyNotFoundException if the key to search for isn't in the hash table
+     * @exception IllegalNullKeyException thrown if key is null
+     * @exception KeyNotFoundException thrown if the key to search for isn't in the hash table
      * @return the book object associated with the key
 	 */
 	@Override
@@ -218,17 +230,41 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		
 		return node.book;
 	}
-
+		
+	/**
+	 * Returns the number of key,value pairs in the hash table
+	 *   
+	 * @return the number of keys
+	 */
 	@Override
 	public int numKeys() {
 		return this.numKeys;
 	}
-
+	
+	/**
+	 * Returns the load factor for this hash table that determines when to increase the 
+	 * capacity of the hash table
+	 * 
+	 * @return the load factor threshold
+	 */
 	@Override
 	public double getLoadFactorThreshold() {
 		return this.loadFactorThreshold;
 	}
-
+	
+	/**
+	 * Capacity is the size of the hash table array. This method returns the current capacity.
+	 * 
+	 * The initial capacity must be a positive integer, 1 or greater
+     * and is specified in the constructor.
+     * 
+     * REQUIRED: When the load factor is reached, 
+     * the capacity must increase to: 2 * capacity + 1
+     *
+     * Once increased, the capacity never decreases
+     * 
+     * @return the capacity or size of the table
+	 */
 	@Override
 	public int getCapacity() {
 		return this.tableSize;
@@ -294,9 +330,14 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		}
 		
 		// Else loop through linked list
-		while (curr.next != null && (key.compareTo(curr.next.key) >= 0)) {
+		while (curr.next != null) {
 			if (key.compareTo(curr.next.key) == 0) {
 				return curr.next;
+			}
+			
+			// Went past where key would be located
+			if (key.compareTo(curr.next.key) > 0) {
+				break;
 			}
 			curr = curr.next;
 		}
@@ -327,7 +368,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 			return;
 		}
 		
-		int newSize = getNextPrime(tableSize * 2);
+		int newSize = 2 * getCapacity() + 1;
 		int keys = this.numKeys; 
 		Node[] oldTable = this.table; // Save a temp copy of old table
 		Node[] newTable = new Node[newSize];
@@ -360,32 +401,33 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		}
 	}
 	
+	// Alternative way to expand capacity
 	/**
 	 * Given an integer, finds the next prime number after it
 	 * 
 	 * @param num the integer to find the next prime number for
 	 * @return the next prime number of num
 	 */
-	private int getNextPrime(int num) {
-		
-		boolean primeFound = false;
-		
-		// Check if num is divisible by any integer from 2 to num - 1.
-		// If it is, increment num
-		while (!primeFound) {
-			num++;
-			for (int i = 2; i < num; i++) {
-				if (num % i == 0) {
-					break;
-				}
-				if (i == num - 1) { // if we've checked every divisor
-					primeFound = true;
-				}
-			}
-		}
-		
-		return num;
-	}
+//	private int getNextPrime(int num) {
+//		
+//		boolean primeFound = false;
+//		
+//		// Check if num is divisible by any integer from 2 to num - 1.
+//		// If it is, increment num
+//		while (!primeFound) {
+//			num++;
+//			for (int i = 2; i < num; i++) {
+//				if (num % i == 0) {
+//					break;
+//				}
+//				if (i == num - 1) { // if we've checked every divisor
+//					primeFound = true;
+//				}
+//			}
+//		}
+//		
+//		return num;
+//	}
 	
     // TODO: add all unimplemented methods so that the class can compile
 
