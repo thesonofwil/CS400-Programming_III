@@ -196,6 +196,93 @@ public class BookHashTableTest {
     	bookObject.insert(key3, book3);
     	assert(bookObject.numKeys() == 3);
     	assert(bookObject.getCapacity() == 5);
-    	assert(bookObject.get(key1).equals(book3));  	
+    	assert(bookObject.get(key3).equals(book3));  	
+    }
+    
+    @Test
+    void test007_Remove_Simple() {
+    	try {
+	    	String key1 = bookTable.get(0).getKey();
+	    	Book book1 = bookTable.get(0);
+	    	
+	    	bookObject.insert(key1, book1);
+	    	assert(bookObject.remove(key1));
+	    	assert(bookObject.getCapacity() == INIT_CAPACITY);
+	    	assert(bookObject.numKeys() == 0);
+	    	bookObject.get(key1);
+	    	fail("Key not found exception not thrown");
+    	} catch (KeyNotFoundException e) {}
+    	catch (Exception e) {
+    		fail("Key not found exception not thrown");
+    	}
+    }
+    
+    @Test
+    void test008_Remove_Throws_Null_Key_Exception() {
+    	try {
+    		bookObject.remove(null);
+    		fail("Illegal null key exception not thrown");
+    	} catch (IllegalNullKeyException e) {
+    		assert(bookObject.numKeys() == 0);
+    		assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	} catch (Exception e) {
+    		fail("Illegal null key exception not thrown");
+    	}
+    }
+    
+    @Test
+    void test009_Remove_and_Reinsert_Simple() throws IllegalNullKeyException, DuplicateKeyException,
+    KeyNotFoundException {
+    	String key1 = bookTable.get(0).getKey();
+    	Book book1 = bookTable.get(0);
+    	
+    	bookObject.insert(key1, book1);
+    	assert(bookObject.remove(key1));
+    	bookObject.insert(key1, book1);
+    	assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	assert(bookObject.numKeys() == 1);
+    	assert(bookObject.get(key1).equals(book1));
+    }
+    
+    @Test
+    void test010_Remove_Does_Not_Decrease_Table_Size() throws IllegalNullKeyException, DuplicateKeyException {
+    	String key1 = bookTable.get(0).getKey();
+    	String key2 = bookTable.get(1).getKey();
+    	Book book1 = bookTable.get(0);
+    	Book book2 = bookTable.get(1);
+    	
+    	assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	bookObject.insert(key1, book1);
+    	bookObject.insert(key2, book2);
+    	assert(bookObject.getCapacity() == 5);
+    	assert(bookObject.remove(key2));
+    	assert(bookObject.getCapacity() == 5);
+    }
+    
+    @Test
+    void test011_Remove_Key_Not_Found() throws IllegalNullKeyException {
+    	assert(!bookObject.remove(bookTable.get(0).getKey()));
+    	assert(bookObject.getCapacity() == INIT_CAPACITY);
+    	assert(bookObject.numKeys() == 0);
+    }
+    
+    @Test
+    // TODO Implement this remove method
+    void test012_Remove_() throws IllegalNullKeyException, DuplicateKeyException {
+    	String key1 = bookTable.get(0).getKey();
+    	String key2 = bookTable.get(1).getKey();
+    	String key3 = bookTable.get(2).getKey();
+    	String key4 = bookTable.get(3).getKey();
+    	Book book1 = bookTable.get(0);
+    	Book book2 = bookTable.get(1);
+    	Book book3 = bookTable.get(2);
+    	Book book4 = bookTable.get(3);
+
+    	
+    	bookObject.insert(key1, book1);
+    	bookObject.insert(key2, book2);
+    	bookObject.insert(key3, book3);
+    	bookObject.insert(key4, book4);
+
     }
 }
