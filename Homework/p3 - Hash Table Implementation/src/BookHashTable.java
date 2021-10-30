@@ -146,14 +146,18 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		int hashIndex = getHashIndex(key);
 		Node newNode = new Node(key, value);
 		
-		// If bucket is empty, insert at head
-		if (this.table[hashIndex] == null) {
+		// If bucket is empty or should be inserted before head, insert at head
+		if (this.table[hashIndex] == null || key.compareTo(this.table[hashIndex].key) > 0) {
+			newNode.next = this.table[hashIndex];
 			this.table[hashIndex] = newNode;
 		} else { // Insert at sorted position
 			Node curr = this.table[hashIndex];
 			
 			// Loop through Bucket's linked list and insert in sorted position
-			while (curr.next != null && (key.compareTo(curr.next.key) > 0)) {
+			while (curr.next != null) {
+				if (key.compareTo(curr.next.key) > 0) {
+					break;
+				}
 				curr = curr.next;
 			}
 			newNode.next = curr.next;
@@ -314,10 +318,8 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		if (key == null) {
 			throw new IllegalNullKeyException();
 		}
-		
-		int hashIndex = getHashIndex(key);
-		
-		Node curr = this.table[hashIndex]; // Get the head of list at index
+				
+		Node curr = this.table[getHashIndex(key)]; // Get the head of list at index
 		
 		// If bucket is empty, then the key isn't there
 		if (curr == null) {
@@ -330,15 +332,16 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		}
 		
 		// Else loop through linked list
-		while (curr.next != null) {
-			if (key.compareTo(curr.next.key) == 0) {
-				return curr.next;
+		while (curr != null) {
+			if (curr.key.equals(key)) {
+				return curr;
 			}
 			
+			// TODO list not inserted in sorted order? 
 			// Went past where key would be located
-			if (key.compareTo(curr.next.key) > 0) {
-				break;
-			}
+			//if (key.compareTo(curr.key) > 0) {
+			//	break;
+			//}
 			curr = curr.next;
 		}
 		
