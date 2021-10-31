@@ -2,21 +2,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-// TODO: comment and complete your HashTableADT implementation
-//
-// TODO: implement all required methods
-// DO ADD REQUIRED PUBLIC METHODS TO IMPLEMENT interfaces
-//
-// DO NOT ADD ADDITIONAL PUBLIC MEMBERS TO YOUR CLASS 
-// (no public or package methods that are not in implemented interfaces)
-//
-// TODO: describe the collision resolution scheme you have chosen
-// identify your scheme as open addressing or bucket
-//
-// if open addressing: describe probe sequence 
-// if buckets: describe data structure for each bucket
-//
-// TODO: explain your hashing algorithm here 
+/**
+ * @author Wilson Tjoeng
+ * tjoeng@wisc.edu
+ * CS400.010
+ * Due: 11/5/21
+ * 
+ * Hash table map implementation utilizing separate chaining as the collision resolution scheme.
+ * Each index of the table is its own sorted linked list. A node is used to hold each key-value 
+ * pair. The hash index is calculated as key.hashcode() % Table_Size. Before inserting, the program
+ * determines if the current table needs to be rehashed. If there is a collision, the program inserts
+ * the node into the linked list in sorted order. 
+ */
 
 /** HashTable implementation that uses:
  * @param <K> unique comparable identifier for each <K,V> pair, may not be null
@@ -30,36 +27,11 @@ public class BookHashTable implements HashTableADT<String, Book> {
     /** The load factor that is used if none is specified by user */
     static final double DEFAULT_LOAD_FACTOR_THRESHOLD = 0.75;
     
-    
     // Private fields of hash table
     private Node[] table;
     private int tableSize;
     private double loadFactorThreshold;
     private int numKeys;
-    
-    /**
-     * Bucket inner class. Each index of the hash table will contain a bucket
-     * that has nodes organized in a sorted linked list
-     * 
-     * @author Wilson Tjoeng
-     *
-     */
-//    private class Bucket {
-//    	
-//    	// Private fields of Bucket
-//    	Node head;
-//    	
-//    	/**
-//    	 * When called, constructs an empty bucket
-//    	 */
-//    	Bucket() {
-//    		this.head = null;
-//    	}
-//    	
-//    	Bucket(Node node) {
-//    		this.head = node;
-//    	}
-//    }
     
     /**
      * Node inner-inner class to hold key-value pairs.
@@ -124,13 +96,17 @@ public class BookHashTable implements HashTableADT<String, Book> {
 	@Override
 	public void insert(String key, Book value) throws IllegalNullKeyException, DuplicateKeyException {
 		// Check table first if key is already present
+		if (key == null) {
+			throw new IllegalNullKeyException();
+		}
+
 		if (find(key) != null) {
 			throw new DuplicateKeyException();
 		}
 		
 		rehash(); // if needed, expand and rehash table
 		insertIntoBucket(key, value);
-		
+				
 		this.numKeys++;
 		// Check for case when n is already in table
 	
@@ -150,6 +126,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 		if (this.table[hashIndex] == null || key.compareTo(this.table[hashIndex].key) > 0) {
 			newNode.next = this.table[hashIndex];
 			this.table[hashIndex] = newNode;
+			return;
 		} else { // Insert at sorted position
 			Node curr = this.table[hashIndex];
 			
@@ -163,6 +140,17 @@ public class BookHashTable implements HashTableADT<String, Book> {
 			newNode.next = curr.next;
 			curr.next = newNode;
 		}
+		
+		// Unsorted Linked List
+//		Node curr = this.table[hashIndex];
+//		if (curr == null) {
+//			this.table[hashIndex] = newNode;
+//			return;
+//		}
+//		while (curr.next != null) {
+//			curr = curr.next;
+//		}
+//		curr.next = newNode;
 	}
 	
 	/**
@@ -196,7 +184,7 @@ public class BookHashTable implements HashTableADT<String, Book> {
 				curr = curr.next;
 				
 				// Key not found if we've reached the end of the list or are past sorted order
-				if (curr == null || key.compareTo(curr.key) > 0) {
+				if (curr == null || key.compareTo(curr.key) > 0) { 
 					return false;
 				} else if (curr.key.equals(key)) {
 					prev.next = curr.next;
@@ -326,22 +314,16 @@ public class BookHashTable implements HashTableADT<String, Book> {
 			return null;
 		}
 		
-		// Check if head is the key of interest
-		if (curr.key.equals(key)) {
-			return curr;
-		}
-		
 		// Else loop through linked list
 		while (curr != null) {
 			if (curr.key.equals(key)) {
 				return curr;
 			}
 			
-			// TODO list not inserted in sorted order? 
 			// Went past where key would be located
-			//if (key.compareTo(curr.key) > 0) {
-			//	break;
-			//}
+			if (key.compareTo(curr.key) > 0) {
+				break;
+			}
 			curr = curr.next;
 		}
 		
@@ -431,7 +413,4 @@ public class BookHashTable implements HashTableADT<String, Book> {
 //		
 //		return num;
 //	}
-	
-    // TODO: add all unimplemented methods so that the class can compile
-
 }

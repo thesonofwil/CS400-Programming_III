@@ -190,7 +190,7 @@ public class BookHashTableTest {
     	
     	bookObject.insert(key2, book2);
     	assert(bookObject.numKeys() == 2);
-    	assert(bookObject.getCapacity() == 5); // next prime of 2 * Initial Capacity
+    	assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1); //
     	assert(bookObject.get(key2).equals(book2));
     	
     	bookObject.insert(key3, book3);
@@ -254,9 +254,9 @@ public class BookHashTableTest {
     	assert(bookObject.getCapacity() == INIT_CAPACITY);
     	bookObject.insert(key1, book1);
     	bookObject.insert(key2, book2);
-    	assert(bookObject.getCapacity() == 5);
+    	assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
     	assert(bookObject.remove(key2));
-    	assert(bookObject.getCapacity() == 5);
+    	assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
     }
     
     @Test
@@ -267,8 +267,7 @@ public class BookHashTableTest {
     }
     
     @Test
-    // TODO Implement this remove method
-    void test012_Remove_() throws IllegalNullKeyException, DuplicateKeyException {
+    void test012_Remove_Bucket_Head() throws IllegalNullKeyException, DuplicateKeyException {
     	String key1 = bookTable.get(0).getKey();
     	String key2 = bookTable.get(1).getKey();
     	String key3 = bookTable.get(2).getKey();
@@ -277,12 +276,259 @@ public class BookHashTableTest {
     	Book book2 = bookTable.get(1);
     	Book book3 = bookTable.get(2);
     	Book book4 = bookTable.get(3);
-
+    	
+    	try {
+	    	bookObject.insert(key1, book1);
+	    	bookObject.insert(key2, book2);
+	    	bookObject.insert(key3, book3);
+	    	bookObject.insert(key4, book4);
+	    	assert(bookObject.numKeys() == 4);
+	    	
+	    	// key 2 -> key 4 in index 5
+	    	assert(bookObject.remove(key2));
+	    	assert(bookObject.get(key4).equals(book4));
+	    	bookObject.get(key2);
+	    	fail("Key not found exception not thrown");
+    	} catch (KeyNotFoundException e) {	
+    	} catch (Exception e) {
+    		fail("Key not found exception not thrown");
+    	}	
+    }
+    
+    @Test
+    void test013_Remove_Bucket_End() throws IllegalNullKeyException, DuplicateKeyException {
+    	String key1 = bookTable.get(0).getKey();
+    	String key2 = bookTable.get(1).getKey();
+    	String key3 = bookTable.get(2).getKey();
+    	String key4 = bookTable.get(3).getKey();
+    	Book book1 = bookTable.get(0);
+    	Book book2 = bookTable.get(1);
+    	Book book3 = bookTable.get(2);
+    	Book book4 = bookTable.get(3);
+    	
+    	try {
+	    	bookObject.insert(key1, book1);
+	    	bookObject.insert(key2, book2);
+	    	bookObject.insert(key3, book3);
+	    	bookObject.insert(key4, book4);
+	    	assert(bookObject.numKeys() == 4);
+	    	
+	    	// key 2 -> key 4 in index 5
+	    	assert(bookObject.remove(key4));
+	    	assert(bookObject.get(key2).equals(book2));
+	    	bookObject.get(key4);
+	    	fail("Key not found exception not thrown");
+    	} catch (KeyNotFoundException e) {	
+    	} catch (Exception e) {
+    		fail("Key not found exception not thrown");
+    	}	
+    }
+    
+    @Test
+    void test014_Insert_Remove_All() throws IllegalNullKeyException, DuplicateKeyException {
+    	String key1 = bookTable.get(0).getKey();
+    	String key2 = bookTable.get(1).getKey();
+    	String key3 = bookTable.get(2).getKey();
+    	String key4 = bookTable.get(3).getKey();
+    	Book book1 = bookTable.get(0);
+    	Book book2 = bookTable.get(1);
+    	Book book3 = bookTable.get(2);
+    	Book book4 = bookTable.get(3);
     	
     	bookObject.insert(key1, book1);
     	bookObject.insert(key2, book2);
+    	int newCapacity = bookObject.getCapacity();
+    	assert newCapacity == 2 * INIT_CAPACITY + 1;
     	bookObject.insert(key3, book3);
     	bookObject.insert(key4, book4);
-
+    	
+    	assert(bookObject.numKeys() == 4);
+    	assert(bookObject.getCapacity() == 2 * newCapacity + 1);
+    	
+    	assert(bookObject.remove(key1));
+    	assert(bookObject.remove(key2));
+    	assert(bookObject.remove(key3));
+    	assert(bookObject.remove(key4));
+    	
+    	assert(bookObject.numKeys() == 0);
+    	assert(bookObject.getCapacity() == 2 * newCapacity + 1);
+    }
+    
+    // Keys 2, 4, and 6 lead to collisions at same index
+    @Test
+    void test015_Three_Collisions_Remove_Reinsert_Head() throws IllegalNullKeyException,
+    DuplicateKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle 
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+	    bookObject.insert(key2, book2); 
+	    bookObject.insert(key4, book4);
+	    bookObject.insert(key7, book7);
+	    assert(bookObject.remove(key2));
+	    bookObject.insert(key2, book7);
+	    assert(bookObject.numKeys() == 3);
+	    assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
+    }
+    
+    @Test
+    void test016_Three_Collisions_Remove_Reinsert_Head_Reversed() throws IllegalNullKeyException,
+    DuplicateKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle 
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+    	bookObject.insert(key7, book7);
+    	bookObject.insert(key4, book4);
+	    bookObject.insert(key2, book2);
+	    assert(bookObject.remove(key2));
+	    bookObject.insert(key2, book7);
+	    assert(bookObject.numKeys() == 3);
+	    assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
+    }
+    
+    @Test
+    void test017_Three_Collisions_Remove_Reinsert_Middle() throws IllegalNullKeyException,
+    DuplicateKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+	    bookObject.insert(key2, book2); 
+	    bookObject.insert(key4, book4);
+	    bookObject.insert(key7, book7);
+	    assert(bookObject.remove(key4));
+	    bookObject.insert(key4, book2);
+	    assert(bookObject.numKeys() == 3);
+	    assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
+    }
+    
+    @Test
+    void test018_Three_Collisions_Remove_Reinsert_Middle_Reversed() throws IllegalNullKeyException,
+    DuplicateKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle 
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+    	bookObject.insert(key7, book7);
+    	bookObject.insert(key4, book4);
+	    bookObject.insert(key2, book2);
+	    assert(bookObject.remove(key4));
+	    bookObject.insert(key4, book7);
+	    assert(bookObject.numKeys() == 3);
+	    assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
+    }
+    
+    @Test
+    void test019_Three_Collisions_Remove_Reinsert_Tail() throws IllegalNullKeyException,
+    DuplicateKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+	    bookObject.insert(key2, book2); 
+	    bookObject.insert(key4, book4);
+	    bookObject.insert(key7, book7);
+	    assert(bookObject.remove(key7));
+	    bookObject.insert(key7, book2);
+	    assert(bookObject.numKeys() == 3);
+	    assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
+    }
+    
+    @Test
+    void test020_Three_Collisions_Remove_Reinsert_Tail_Reversed() throws IllegalNullKeyException,
+    DuplicateKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle 
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+    	bookObject.insert(key7, book7);
+    	bookObject.insert(key4, book4);
+	    bookObject.insert(key2, book2);
+	    assert(bookObject.remove(key7));
+	    bookObject.insert(key7, book2);
+	    assert(bookObject.numKeys() == 3);
+	    assert(bookObject.getCapacity() == 2 * INIT_CAPACITY + 1);
+    }
+    
+    @Test
+    void test021_Three_Collisions_Insert_Duplicate_Head() throws IllegalNullKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+    	try {
+    		bookObject.insert(key2, book2); 
+    	    bookObject.insert(key4, book4);
+    	    bookObject.insert(key7, book7);
+    	    bookObject.insert(key2, book2);
+    	    fail("Duplicate key exception not thrown");
+    	} catch (DuplicateKeyException e) {
+    	} catch (Exception e) {
+    		fail("Duplicate key exception not thrown");
+    	}
+    }
+    
+    @Test
+    void test022_Three_Collisions_Insert_Duplicate_Middle() throws IllegalNullKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+    	try {
+    		bookObject.insert(key2, book2); 
+    	    bookObject.insert(key4, book4);
+    	    bookObject.insert(key7, book7);
+    	    bookObject.insert(key4, book2);
+    	    fail("Duplicate key exception not thrown");
+    	} catch (DuplicateKeyException e) {
+    	} catch (Exception e) {
+    		fail("Duplicate key exception not thrown");
+    	}
+    }
+    
+    @Test
+    void test023_Three_Collisions_Insert_Duplicate_Tail() throws IllegalNullKeyException {
+    	String key2 = bookTable.get(1).getKey(); // Head
+    	String key4 = bookTable.get(3).getKey(); // Middle
+    	String key7 = bookTable.get(7).getKey(); // Tail
+    	Book book2 = bookTable.get(1);
+    	Book book4 = bookTable.get(3);
+    	Book book7 = bookTable.get(6);
+    	
+    	try {
+    		bookObject.insert(key2, book2); 
+    	    bookObject.insert(key4, book4);
+    	    bookObject.insert(key7, book7);
+    	    bookObject.insert(key7, book2);
+    	    fail("Duplicate key exception not thrown");
+    	} catch (DuplicateKeyException e) {
+    	} catch (Exception e) {
+    		fail("Duplicate key exception not thrown");
+    	}
     }
 }
