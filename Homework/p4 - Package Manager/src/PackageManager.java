@@ -60,17 +60,23 @@ public class PackageManager {
      */
     public void constructGraph(String jsonFilepath) throws FileNotFoundException, IOException, ParseException {
         Object obj = new JSONParser().parse(new FileReader(jsonFilepath));
+        JSONObject jo = (JSONObject) obj;
+        JSONArray packages = (JSONArray) jo.get("packages");
         
-        JSONObject packageItem = (JSONObject) obj;
-        String name = (String) packageItem.get("name");
-        
-        JSONArray arr = (JSONArray) packageItem.get("dependencies");
-    
-        List<Object> dependency = new ArrayList<Object>();
-        
-        for (Object i : arr) {
-        	dependency.add(i);
+        for (int i = 0; i < packages.size(); i++) {
+        	JSONObject pkg = (JSONObject) packages.get(i);
+        	String name = (String) pkg.get("name");
+        	graph.addVertex(name);
+        	JSONArray dependencies = (JSONArray) pkg.get("dependencies");
+        	
+        	// Get each dependency and store them as vertices
+        	for (Object o : dependencies) {
+        		String dependency = o.toString();
+        		graph.addVertex(dependency);
+        	}
         }
+                    
+        // TODO add vertices and edges to graph
     }
     
     /**
@@ -79,7 +85,7 @@ public class PackageManager {
      * @return Set<String> of all the packages
      */
     public Set<String> getAllPackages() {
-        return null;
+        return graph.getAllVertices();
     }
     
     /**
