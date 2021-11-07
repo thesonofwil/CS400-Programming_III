@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Filename:   Graph.java
  * Project:    p4
- * Authors:    
+ * Authors:    Wilson Tjoeng
  * 
  * Directed and unweighted graph implementation
  */
@@ -19,6 +19,12 @@ public class Graph implements GraphADT {
 	private int numVertices;
 	private int numEdges;
 	
+	/**
+	 * Vertex class that holds data and keeps track of directed edges
+	 * 
+	 * @author Wilson Tjoeng
+	 *
+	 */
 	private class Vertex {
 		String data;
 		List<Edge> outgoing; // edges going out of vertex
@@ -29,6 +35,12 @@ public class Graph implements GraphADT {
 		}
 	}
 	
+	/**
+	 * Edge class used to connect a source vertex to a target vertex
+	 * 
+	 * @author Wilson Tjoeng
+	 *
+	 */
 	private class Edge {
 		Vertex source;
 		Vertex target;
@@ -91,6 +103,11 @@ public class Graph implements GraphADT {
 		numVertices--;
 	}
 	
+	/**
+	 * Removes all edges connected to a vertex 
+	 * 
+	 * @param v vertex to clear edges from 
+	 */
 	private void removeAdjacentEdges(Vertex v) {
 		for (Edge e : v.outgoing) {
 			removeEdge(e.source.data, e.target.data);
