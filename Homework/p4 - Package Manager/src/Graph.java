@@ -14,16 +14,28 @@ import java.util.Set;
 public class Graph implements GraphADT {
 	
 	private static Set<Vertex> vertices;
+	private static Set<Edge> edges;
+	//private static ArrayList<ArrayList<Boolean>> adjMatrix;
 	private int numVertices;
 	private int numEdges;
 	
 	private class Vertex {
 		String data;
-		List<Vertex> outgoing; // vertices that vertex points to
-		List<Vertex> incoming; // vertices that point to vertex
+		List<Edge> outgoing; // edges going out of vertex
+		List<Edge> incoming; // edges going to vertex
 		
 		Vertex (String s) {
 			this.data = s;
+		}
+	}
+	
+	private class Edge {
+		Vertex source;
+		Vertex target;
+		
+		Edge (Vertex source, Vertex target) {
+			this.source = source;
+			this.target = target;
 		}
 	}
 	
@@ -74,8 +86,19 @@ public class Graph implements GraphADT {
 		}
 		
 		Vertex v = getVertex(vertex);
+		removeAdjacentEdges(v);
 		vertices.remove(v);
 		numVertices--;
+	}
+	
+	private void removeAdjacentEdges(Vertex v) {
+		for (Edge e : v.outgoing) {
+			removeEdge(e.source.data, e.target.data);
+		}
+		
+		for (Edge e : v.incoming) {
+			removeEdge(e.source.data, e.target.data);
+		}
 	}
 
 	/**
@@ -110,8 +133,11 @@ public class Graph implements GraphADT {
 			return;
 		}
 		
-		v1.outgoing.add(v2);
-		v2.incoming.add(v1);
+		Edge e = new Edge(v1, v2);
+		
+		v1.outgoing.add(e);
+		v2.incoming.add(e);
+		edges.add(e);
 		numEdges++;
 	}
 	
@@ -143,11 +169,15 @@ public class Graph implements GraphADT {
 //			return;
 //		}
 		
+		Edge e = getOutgoingEdge(v1, v2);
+		
 		// Remove entry. Nothing happens if object is not in list
-		v1.outgoing.remove(v2);
-		v2.incoming.remove(v1);
+		v1.outgoing.remove(e);
+		v2.incoming.remove(e);
+		edges.remove(e);
 		numEdges--;
 	}	
+	
 	
 	/**
      * Returns a Set that contains all the vertices
@@ -179,12 +209,12 @@ public class Graph implements GraphADT {
 		Vertex v = getVertex(vertex);
 		
 		// Loop through incoming and outgoing vertex lists
-		for (Vertex n : v.incoming) {
-			neighbors.add(n.data);
+		for (Edge e : v.incoming) {
+			neighbors.add(e.source.data);
 		}
 		
-		for (Vertex n : v.outgoing) {
-			neighbors.add(n.data);
+		for (Edge e : v.outgoing) {
+			neighbors.add(e.target.data);
 		}
 		
 		return neighbors;
@@ -249,14 +279,9 @@ public class Graph implements GraphADT {
 		// We just need to check if one vertex exists in either the 
 		// incoming or outgoing lists of the other vertex
 		
-		for (Vertex v : v1.incoming) {
-			if (v.equals(v2)) {
-				return true;
-			}
-		}
-		
-		for (Vertex v : v1.outgoing) {
-			if (v.equals(v2)) {
+		for (Edge e : edges) {
+			if ((e.source.equals(v1) && e.target.equals(v2)) || 
+					(e.source.equals(v2)) && (e.target.equals(v1))) {
 				return true;
 			}
 		}
@@ -272,12 +297,21 @@ public class Graph implements GraphADT {
 	 * @return true if v1 points to v2; false otherwise
 	 */
 	private boolean hasOutgoingEdge(Vertex v1, Vertex v2) {
-		for (Vertex v : v1.outgoing) {
-			if (v.equals(v2)) {
+		for (Edge e : v1.outgoing) {
+			if (e.target.equals(v2)) {
 				return true;
 			}
 		}
 		
 		return false;
+	}
+	
+	private Edge getOutgoingEdge(Vertex v1, Vertex v2) {
+		for (Edge e : v1.outgoing) {
+			if (e.target.equals(v2)) {
+				return e;
+			}
+		}
+		return null;
 	}
 }
