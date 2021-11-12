@@ -97,6 +97,12 @@ public interface GraphADT {
      * For the example graph, A->[B, C], D->[A, B] 
      *     getAdjacentVerticesOf(A) should return [B, C]. 
      * 
+     * A depends on B and C, so B and C come before A
+     *  			B   C
+     *  			^   ^
+     *   			 \ / 
+     *   		      A
+     * 
      * In terms of packages, this list contains the immediate 
      * dependencies of A and depending on your graph structure, 
      * this could be either the predecessors or successors of A.
