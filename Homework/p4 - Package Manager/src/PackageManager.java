@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -50,8 +51,7 @@ public class PackageManager {
     }
     
     /**
-     * Takes in a file path for a json file and builds the
-     * package dependency graph from it. 
+     * Takes in a file path for a json file and builds the package dependency graph from it. 
      * 
      * @param jsonFilepath the name of json data file with package dependency information
      * @throws FileNotFoundException if file path is incorrect
@@ -59,22 +59,32 @@ public class PackageManager {
      * @throws ParseException if the given json cannot be parsed 
      */
     public void constructGraph(String jsonFilepath) throws FileNotFoundException, IOException, ParseException {
-        Object obj = new JSONParser().parse(new FileReader(jsonFilepath));
-        JSONObject jo = (JSONObject) obj;
-        JSONArray packages = (JSONArray) jo.get("packages");
-        
-        for (int i = 0; i < packages.size(); i++) {
-        	JSONObject pkg = (JSONObject) packages.get(i);
-        	String name = (String) pkg.get("name");
-        	graph.addVertex(name);
-        	JSONArray dependencies = (JSONArray) pkg.get("dependencies");
-        	
-        	// Get each dependency and store them as vertices
-        	for (Object o : dependencies) {
-        		String dependency = o.toString();
-        		graph.addVertex(dependency);
-        	}
-        }
+        try {
+        	Object obj = new JSONParser().parse(new FileReader(jsonFilepath));
+            JSONObject jo = (JSONObject) obj;
+            JSONArray packages = (JSONArray) jo.get("packages");
+            
+            for (int i = 0; i < packages.size(); i++) {
+            	JSONObject pkg = (JSONObject) packages.get(i);
+            	String name = (String) pkg.get("name");
+            	graph.addVertex(name);
+            	JSONArray dependencies = (JSONArray) pkg.get("dependencies");
+            	
+            	// Get each dependency and add an edge. addEdge will automatically create a
+            	// new vertex if it doesn't exist.
+            	// If package A depends on B, then create a directed edge from B to A.
+            	for (Object o : dependencies) {
+            		String dependency = o.toString();
+            		graph.addEdge(dependency, name);
+            	}
+            }
+        } catch (FileNotFoundException e) {
+        	System.err.println("Could not find file: " + e.getMessage());
+        } catch (IOException e) {
+        	System.err.println(e.getMessage());
+        } catch (ParseException e) {
+        	System.err.println(e.getMessage());
+    }
                     
         // TODO add vertices and edges to graph
     }
@@ -106,7 +116,15 @@ public class PackageManager {
      * dependency graph.
      */
     public List<String> getInstallationOrder(String pkg) throws CycleException, PackageNotFoundException {
-        return null;
+        // TODO do topological ordering
+    	
+    	int num = graph.order(); // Number of vertices
+    	Set<String> unvisited = graph.getAllVertices();
+    	//List<String> dependencies = graph.getAdjacentVerticesOf(pkg); // Get outgoing vertices
+    	
+    	Stack<String> st = new Stack<String>();
+    	
+    	return null;
     }
     
     /**
@@ -145,7 +163,25 @@ public class PackageManager {
      * @throws CycleException if you encounter a cycle in the graph
      */
     public List<String> getInstallationOrderForAllPackages() throws CycleException {
-        return null;
+        
+    	// Topological ordering
+    	
+    	int numVertices = graph.order();
+        Stack<String> visited = new Stack<String>();
+        Set<String> unvisited = graph.getAllVertices();
+        
+        // For each vertex with no predecessor, push to stack
+        for (String v : unvisited) {
+        	
+        	visited.push(v);
+        	unvisited.remove(v);
+        }
+        
+        while (!visited.empty()) {
+        	String curr = visited.peek();
+        }
+        
+    	return null;
     }
     
     /**

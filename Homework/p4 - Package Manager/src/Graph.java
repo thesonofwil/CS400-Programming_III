@@ -14,49 +14,38 @@ import java.util.Set;
 public class Graph implements GraphADT {
 	
 	private static Set<Vertex> vertices;
-	private static Set<Edge> edges;
 	//private static ArrayList<ArrayList<Boolean>> adjMatrix;
 	private int numVertices;
 	private int numEdges;
 	
+	/*
+	 * Default no-argument constructor
+	 */ 
+	public Graph() {
+		vertices = new HashSet<Vertex>();
+		numVertices = 0;
+		numEdges = 0;
+	}
+	
 	/**
-	 * Vertex class that holds data and keeps track of directed edges
+	 * Private inner vertex class
 	 * 
 	 * @author Wilson Tjoeng
 	 *
 	 */
 	private class Vertex {
 		String data;
-		List<Edge> outgoing; // edges going out of vertex
-		List<Edge> incoming; // edges going to vertex
-		
+		List<Vertex> dependencies; // direct dependencies e.g. A -> [B, C] -> D,
+								   // then store B and C
+		/**
+		 * Vertex constructor 
+		 * 
+		 * @param s String data to hold
+		 */
 		Vertex (String s) {
 			this.data = s;
+			dependencies = new ArrayList<Vertex>();
 		}
-	}
-	
-	/**
-	 * Edge class used to connect a source vertex to a target vertex
-	 * 
-	 * @author Wilson Tjoeng
-	 *
-	 */
-	private class Edge {
-		Vertex source;
-		Vertex target;
-		
-		Edge (Vertex source, Vertex target) {
-			this.source = source;
-			this.target = target;
-		}
-	}
-	
-	/*
-	 * Default no-argument constructor
-	 */ 
-	public Graph() {
-		numVertices = 0;
-		numEdges = 0;
 	}
 
 	/**
@@ -80,6 +69,7 @@ public class Graph implements GraphADT {
 		numVertices++;
 	}
 
+	
 	/**
      * Remove a vertex and all associated 
      * edges from the graph.
@@ -101,21 +91,6 @@ public class Graph implements GraphADT {
 		removeAdjacentEdges(v);
 		vertices.remove(v);
 		numVertices--;
-	}
-	
-	/**
-	 * Removes all edges connected to a vertex 
-	 * 
-	 * @param v vertex to clear edges from 
-	 */
-	private void removeAdjacentEdges(Vertex v) {
-		for (Edge e : v.outgoing) {
-			removeEdge(e.source.data, e.target.data);
-		}
-		
-		for (Edge e : v.incoming) {
-			removeEdge(e.source.data, e.target.data);
-		}
 	}
 
 	/**
@@ -146,18 +121,14 @@ public class Graph implements GraphADT {
 		Vertex v1 = getVertex(vertex1);
 		Vertex v2 = getVertex(vertex2);
 		
-		if (hasOutgoingEdge(v1, v2)) {
+		if (hasDependency(v1, v2)) { // There is already an edge
 			return;
 		}
 		
-		Edge e = new Edge(v1, v2);
-		
-		v1.outgoing.add(e);
-		v2.incoming.add(e);
-		edges.add(e);
+		v1.dependencies.add(v2);
 		numEdges++;
 	}
-	
+
 	/**
      * Remove the edge from vertex1 to vertex2
      * from this graph.  (edge is directed and unweighted)
@@ -185,17 +156,13 @@ public class Graph implements GraphADT {
 //		if (hasOutgoingEdge(v1, v2)) {
 //			return;
 //		}
-		
-		Edge e = getOutgoingEdge(v1, v2);
-		
+				
 		// Remove entry. Nothing happens if object is not in list
-		v1.outgoing.remove(e);
-		v2.incoming.remove(e);
-		edges.remove(e);
-		numEdges--;
-	}	
-	
-	
+		if (v1.dependencies.remove(v2)) {
+			numEdges--;
+		}	
+	}
+
 	/**
      * Returns a Set that contains all the vertices
      * 
@@ -211,9 +178,18 @@ public class Graph implements GraphADT {
 	}
 
 	/**
-     * Get all the neighbor (adjacent) vertices of a vertex
-     *
-	 */
+     * Get all the neighbor (adjacent-dependencies) of a vertex
+     * 
+     * For the example graph, A->[B, C], D->[A, B] 
+     *     getAdjacentVerticesOf(A) should return [B, C]. 
+     * 
+     * In terms of packages, this list contains the immediate 
+     * dependencies of A and depending on your graph structure, 
+     * this could be either the predecessors or successors of A.
+     * 
+     * @param vertex the specified vertex
+     * @return an List<String> of all the adjacent vertices for specified vertex
+     */
 	public List<String> getAdjacentVerticesOf(String vertex) {
 		
 		// Vertex not in graph
@@ -225,31 +201,59 @@ public class Graph implements GraphADT {
 		
 		Vertex v = getVertex(vertex);
 		
-		// Loop through incoming and outgoing vertex lists
-		for (Edge e : v.incoming) {
-			neighbors.add(e.source.data);
-		}
-		
-		for (Edge e : v.outgoing) {
-			neighbors.add(e.target.data);
+		// Loop through outgoing vertex lists
+		for (Vertex neighbor : v.dependencies) {
+			neighbors.add(neighbor.data);
 		}
 		
 		return neighbors;
 	}
-	
+
 	/**
      * Returns the number of edges in this graph.
+     * 
+     * @return number of edges in the graph.
      */
     public int size() {
         return numEdges;
     }
-
-	/**
+    
+    /**
      * Returns the number of vertices in this graph.
+     * 
+     * @return number of vertices in graph.
      */
 	public int order() {
-        return numVertices;
-    }
+		return numVertices;
+	}
+	
+	/////---------------- Private Helper Methods ----------------\\\\\
+	
+	/**
+	 * Removes all edges connected to a vertex by removing vertex from adjacency lists
+	 * 
+	 * @param v vertex to clear edges from 
+	 */
+	private void removeAdjacentEdges(Vertex v) {
+//		for (Vertex vertex : vertices) {
+//			if (vertex.dependencies.remove(v)) {
+//				numEdges--;
+//			}
+//		}
+//		
+//		int numOutgoingEdges = v.dependencies.size();
+//		numEdges = numEdges - numOutgoingEdges;
+		
+		// Remove edges pointing to v
+		for (Vertex vertex : vertices) {
+			removeEdge(vertex.data, v.data);
+		}
+		
+		// Remove edges coming from v
+		for (Vertex vertex : v.dependencies) {
+			removeEdge(v.data, vertex.data);
+		}
+	}
 	
 	/**
 	 * Checks if graph has vertex with the given string
@@ -285,50 +289,19 @@ public class Graph implements GraphADT {
 	}
 	
 	/**
-	 * Checks if there is an edge that connects v1 and v2 regardless of direction
-	 * 
-	 * @param v1
-	 * @param v2
-	 * @return true if v1 and v2 are connected; false otherwise
-	 */
-	private boolean hasEdge(Vertex v1, Vertex v2) {
-		
-		// We just need to check if one vertex exists in either the 
-		// incoming or outgoing lists of the other vertex
-		
-		for (Edge e : edges) {
-			if ((e.source.equals(v1) && e.target.equals(v2)) || 
-					(e.source.equals(v2)) && (e.target.equals(v1))) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Checks if there is an edge from v1 to v2
+	 * Checks if there is a direct dependency between v1 and v2 i.e v1 -> v2
 	 * 
 	 * @param v1 the source vertex 
 	 * @param v2 the target vertex
 	 * @return true if v1 points to v2; false otherwise
 	 */
-	private boolean hasOutgoingEdge(Vertex v1, Vertex v2) {
-		for (Edge e : v1.outgoing) {
-			if (e.target.equals(v2)) {
+	private boolean hasDependency(Vertex v1, Vertex v2) {
+		for (Vertex v : v1.dependencies) {
+			if (v.equals(v2)) {
 				return true;
 			}
 		}
 		
 		return false;
-	}
-	
-	private Edge getOutgoingEdge(Vertex v1, Vertex v2) {
-		for (Edge e : v1.outgoing) {
-			if (e.target.equals(v2)) {
-				return e;
-			}
-		}
-		return null;
-	}
+	}	
 }
