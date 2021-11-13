@@ -2,6 +2,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -182,6 +183,48 @@ public class PackageManager {
         }
         
     	return null;
+    }
+    
+    /**
+     * Finds and creates a list of all vertices without any predecessors. In a DAG, these 
+     * will essentially be root nodes. 
+     * 
+     * @return a list of packages with no predecessors
+     */
+    private List<String> getPackagesWithNoPredecessors() {
+    	Set<String> packages = graph.getAllVertices();
+    	List<String> noPredPackages = new ArrayList<String>();
+    	//List<String> successors = new ArrayList<String>();; 
+    	
+    	// If a vertex is a successor then by definition it has a predecessor. Hashtable used for
+    	// faster lookup
+    	Hashtable<String, Integer> successors = new Hashtable<String, Integer>();
+    	
+    	// Idea: loop through all packages. For each package, loop through the other packages
+    	// and check if their adjacent neighbors list contains the current package. If none do,
+    	// add to list. Challenge is making this as efficient as possible
+    	for (String main : packages) {
+    		boolean hasNoPred = true;
+    		for (String pkg : packages) {
+    			if (pkg.equals(main) || successors.contains(pkg)) continue; //graph.getAdjacentVerticesOf(main).contains(pkg)) continue;
+    			
+    			// Add adjacent neighbors to successors list. These will be skipped next iteration
+    			List<String> pkgNeighbors = graph.getAdjacentVerticesOf(pkg);
+    			for (String pkgNeighbor : pkgNeighbors) {
+    				successors.put(pkgNeighbor, 1);
+    			}
+    			
+    			if (pkgNeighbors.contains(main)) {
+    				hasNoPred = false;
+    				successors.put(main, 1);
+    				break; // There is a vertex that points to main
+    			}
+    		}
+    		
+    		if (hasNoPred) noPredPackages.add(main);
+    	}
+    	
+    	return noPredPackages;
     }
     
     /**
