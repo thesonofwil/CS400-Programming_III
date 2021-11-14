@@ -136,6 +136,13 @@ public class PackageManager {
     	return pkgOrder;
     }
     
+    /**
+     * Recursive depth-first search helper function
+     * 
+     * @param pkgOrder output list to hold package dependencies 
+     * @param visited list to keep track of which vertices have been visited 
+     * @param pkg package to visit
+     */
     private void getInstallationOrder(List<String> pkgOrder, List<String> visited, String pkg) {
     	visited.add(pkg);
     	List<String> successors = graph.getAdjacentVerticesOf(pkg);
@@ -168,7 +175,23 @@ public class PackageManager {
      * do not exist in the dependency graph.
      */
     public List<String> toInstall(String newPkg, String installedPkg) throws CycleException, PackageNotFoundException {
-        return null;
+        
+    	// TODO CycleException
+    	
+    	if (!hasPackage(newPkg) || !hasPackage(installedPkg)) {
+    		throw new PackageNotFoundException();
+    	}
+    	
+    	// First we need to get a list of successors of installedPkg
+    	List<String> installedPkgs = getInstallationOrder(installedPkg);
+    	
+    	// Next we'll get the list of dependencies for newPkg
+    	List<String> newPkgInstallOrder = getInstallationOrder(newPkg);
+    	
+    	// Then Get packages found in the second list that are not in the first list. These will 
+    	// be packages that have not been installed yet that need to be. 
+    	
+    	return getUniqueElementsInLists(installedPkgs, newPkgInstallOrder);
     }
     
     /**
@@ -284,13 +307,43 @@ public class PackageManager {
      * @throws CycleException if you encounter a cycle in the graph
      */
     public String getPackageWithMaxDependencies() throws CycleException {
-        return "";
+        
+    	//TODO CycleException
+    	
+    	// This may not be the most efficient and elegant solution
+    	Set<String> packages = graph.getAllVertices();
+    	int size = 0;
+    	String pkgWithMaxDependcies = "";
+    	
+    	for (String pkg : packages) {
+    		try {
+				List<String> pkgDependencies = getInstallationOrder(pkg);
+				if (pkgDependencies.size() > size) {
+					size = pkgDependencies.size();
+					pkgWithMaxDependcies = pkg;
+				}
+			} catch (CycleException e) {
+				e.printStackTrace();
+			} catch (PackageNotFoundException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return pkgWithMaxDependcies;
     }
 
     public static void main (String [] args) {
         System.out.println("PackageManager.main()");
     }
     
+    /**
+     * Checks if all elements of one list are present in another list i.e. if a list is a 
+     * subset of another 
+     * 
+     * @param child list whose elements will be examined
+     * @param parent list whose elements will be compared to 
+     * @return true if child is a subset of parent
+     */
     private boolean isSubsetOfList(List<String> child, List<String> parent) {
     	boolean isSubset = true;
     	
@@ -315,4 +368,20 @@ public class PackageManager {
     	return packages.contains(pkg);
     }
     
+    /**
+     * Compares the elements between two lists, and returns a new list of just the unique
+     * elements. In shared_dependencies.json, if list1 = [B, D] and list 2 = [A, B, C, D], then
+     * this will return [A, C]. For this function to work, we'll assume the second list contains
+     * more elements.
+     * 
+     * @param list1 smaller list
+     * @param list2 larger list 
+     * @return list of unique elements
+     */
+    private List<String> getUniqueElementsInLists(List<String> list1, List<String> list2) {
+    	List<String> list3 = new ArrayList<String>(list2); // Copies list 2
+    	list3.removeAll(list1);
+    	
+    	return list3;
+    }
 }
