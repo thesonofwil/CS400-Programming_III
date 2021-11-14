@@ -117,15 +117,35 @@ public class PackageManager {
      * dependency graph.
      */
     public List<String> getInstallationOrder(String pkg) throws CycleException, PackageNotFoundException {
-        // TODO do topological ordering
+    	// TODO CycleException
     	
-    	int num = graph.order(); // Number of vertices
-    	Set<String> unvisited = graph.getAllVertices();
-    	//List<String> dependencies = graph.getAdjacentVerticesOf(pkg); // Get outgoing vertices
+    	if (!hasPackage(pkg)) {
+    		throw new PackageNotFoundException();
+    	}
     	
-    	Stack<String> st = new Stack<String>();
+    	List<String> pkgOrder = new ArrayList<String>();
+    	List<String> visited = new ArrayList<String>();
     	
-    	return null;
+    	getInstallationOrder(pkgOrder, visited, pkg);
+    	
+    	// DFS returns list in sequential order. So we need to get the reverse
+    	for (int i = visited.size() - 1; i > 0; i--) {
+    		pkgOrder.add(visited.get(i));
+    	}
+    	
+    	return pkgOrder;
+    }
+    
+    private void getInstallationOrder(List<String> pkgOrder, List<String> visited, String pkg) {
+    	visited.add(pkg);
+    	List<String> successors = graph.getAdjacentVerticesOf(pkg);
+    	
+    	for (String s : successors) {
+    		if (!visited.contains(s)) {
+    			getInstallationOrder(pkgOrder, visited, s);
+    			//pkgOrder.add(s); // Adds pkg in reverse order
+    		}
+    	}
     }
     
     /**
@@ -282,6 +302,17 @@ public class PackageManager {
     	}
     	
     	return isSubset;
+    }
+    
+    /**
+     * Checks if dependency graph has a specified package 
+     * 
+     * @param pkg Package to look for in graph
+     * @return true if graph contains the package; false otherwise
+     */
+    private boolean hasPackage(String pkg) {
+    	Set<String> packages = graph.getAllVertices();
+    	return packages.contains(pkg);
     }
     
 }
