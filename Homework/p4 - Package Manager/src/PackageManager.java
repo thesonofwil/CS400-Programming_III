@@ -167,22 +167,45 @@ public class PackageManager {
         
     	// Topological ordering
     	
-    	int numVertices = graph.order();
-        Stack<String> visited = new Stack<String>();
+    	int num = graph.order(); // Number of vertices
+        Stack<String> st = new Stack<String>();
+        
+        // Keep track of vertices that have or have not been visited
         Set<String> unvisited = graph.getAllVertices();
+        List<String> visited = new ArrayList<String>();
+        
+        List<String> noPredPackages = getPackagesWithNoPredecessors();
+        
+        List<String> installOrder = new ArrayList<String>(); // Return value
         
         // For each vertex with no predecessor, push to stack
-        for (String v : unvisited) {
-        	
-        	visited.push(v);
+        for (String v : noPredPackages) {
+        	st.push(v);
         	unvisited.remove(v);
         }
         
-        while (!visited.empty()) {
-        	String curr = visited.peek();
+        while (!st.empty()) {
+        	String curr = st.peek();
+        	
+        	// If all successors of curr are visited
+        	if (isSubsetOfList(graph.getAdjacentVerticesOf(curr), visited)) { 
+        		st.pop();
+        		installOrder.add(num - 1, curr); // Assign num to vertex
+        		num--;
+        	} else { // Add an unvisited successor of curr to stack
+        		List<String> currSuccessors = graph.getAdjacentVerticesOf(curr);
+        		for (String s : currSuccessors) {
+        			if (!visited.contains(s)) {
+        				visited.add(s);
+        				unvisited.remove(s);
+        				st.push(s);
+        				break;
+        			}
+        		}
+        	}
         }
         
-    	return null;
+    	return installOrder;
     }
     
     /**
@@ -246,6 +269,19 @@ public class PackageManager {
 
     public static void main (String [] args) {
         System.out.println("PackageManager.main()");
+    }
+    
+    private boolean isSubsetOfList(List<String> child, List<String> parent) {
+    	boolean isSubset = true;
+    	
+    	for (String s : child) {
+    		if (!parent.contains(s)) {
+    			isSubset = false;
+    			break;
+    		}
+    	}
+    	
+    	return isSubset;
     }
     
 }
