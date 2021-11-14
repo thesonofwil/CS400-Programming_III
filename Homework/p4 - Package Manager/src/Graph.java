@@ -14,7 +14,6 @@ import java.util.Set;
 public class Graph implements GraphADT {
 	
 	private static Set<Vertex> vertices;
-	//private static ArrayList<ArrayList<Boolean>> adjMatrix;
 	private int numVertices;
 	private int numEdges;
 	
@@ -152,10 +151,6 @@ public class Graph implements GraphADT {
 		
 		Vertex v1 = getVertex(vertex1);
 		Vertex v2 = getVertex(vertex2);
-		
-//		if (hasOutgoingEdge(v1, v2)) {
-//			return;
-//		}
 				
 		// Remove entry. Nothing happens if object is not in list
 		if (v1.dependencies.remove(v2)) {
@@ -235,14 +230,6 @@ public class Graph implements GraphADT {
 	 * @param v vertex to clear edges from 
 	 */
 	private void removeAdjacentEdges(Vertex v) {
-//		for (Vertex vertex : vertices) {
-//			if (vertex.dependencies.remove(v)) {
-//				numEdges--;
-//			}
-//		}
-//		
-//		int numOutgoingEdges = v.dependencies.size();
-//		numEdges = numEdges - numOutgoingEdges;
 		
 		// Remove edges pointing to v
 		for (Vertex vertex : vertices) {
@@ -250,8 +237,8 @@ public class Graph implements GraphADT {
 		}
 		
 		// Remove edges coming from v
-		for (Vertex vertex : v.dependencies) {
-			removeEdge(v.data, vertex.data);
+		for (String target : getAdjacentVerticesOf(v.data)) {
+			removeEdge(v.data, target);
 		}
 	}
 	
