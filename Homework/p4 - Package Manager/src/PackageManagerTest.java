@@ -30,6 +30,19 @@ public class PackageManagerTest {
 			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
 			+ "p4 - Package Manager/shared_dependencies.json";
 	
+	private final String sharedDependencies2 = "C://Users/Wilson Tjoeng/Documents/School/UW CS400/"
+			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
+			+ "p4 - Package Manager/shared_dependencies_2.json";
+	
+	//  	 A  
+	//	    / \
+	//	   B - C
+	//	        \
+	//	         D
+	private final String valid = "C://Users/Wilson Tjoeng/Documents/School/UW CS400/"
+			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
+			+ "p4 - Package Manager/valid.json";
+	
 	/**
      * @throws java.lang.Exception
      */
@@ -130,6 +143,42 @@ public class PackageManagerTest {
     	    	
     	assert(A_order.get(0).equals("A"));
     	assert(A_order.get(1).equals("C"));
+    	assert(A_order.size() == 2);
+    }
+    
+    @Test
+    void test008_get_installation_order_root_valid() throws FileNotFoundException, 
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(valid);
+    	List<String> A_dependencies = pkgMgr.getInstallationOrder("A");
+    	
+    	assert(A_dependencies.get(0).equals("A"));
+    	assert(A_dependencies.get(1).equals("B"));
+    	assert(A_dependencies.get(2).equals("C"));
+    	assert(A_dependencies.get(3).equals("D"));
+    	assert(A_dependencies.size() == 4);
+    }
+    
+    @Test
+    void test009_get_installation_order_B_sharedDependencies2() throws FileNotFoundException,
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(sharedDependencies2);
+    	List<String> A_dependencies = pkgMgr.getInstallationOrder("B");
+    	
+    	assert(A_dependencies.get(0).equals("B"));
+    	assert(A_dependencies.get(1).equals("C"));
+    	assert(A_dependencies.get(2).equals("D"));
+    	assert(A_dependencies.size() == 3);
+    }
+    
+    @Test
+    void test010_to_install_C_installed_valid_sharedDependencies2() throws FileNotFoundException, 
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(sharedDependencies2);
+    	List<String> A_order = pkgMgr.toInstall("A", "C");
+    	    	
+    	assert(A_order.get(0).equals("A"));
+    	assert(A_order.get(1).equals("B"));
     	assert(A_order.size() == 2);
     }
 }
