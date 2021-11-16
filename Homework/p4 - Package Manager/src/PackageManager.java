@@ -15,7 +15,9 @@ import org.json.simple.parser.ParseException;
 /**
  * Filename:   PackageManager.java
  * Project:    p4
- * Authors:    
+ * Authors:    Wilson Tjoeng
+ * Course:	   CS400.010
+ * Due:		   11/19/21
  * 
  * PackageManager is used to process json package dependency files
  * and provide function that make that information available to other users.
@@ -48,7 +50,7 @@ public class PackageManager {
      * Package Manager default no-argument constructor.
      */
     public PackageManager() {
-        
+        graph = new Graph();
     }
     
     /**
@@ -73,10 +75,10 @@ public class PackageManager {
             	
             	// Get each dependency and add an edge. addEdge will automatically create a
             	// new vertex if it doesn't exist.
-            	// If package A depends on B, then create a directed edge from B to A.
+            	// If package A depends on B, then create a directed edge from A to B.
             	for (Object o : dependencies) {
             		String dependency = o.toString();
-            		graph.addEdge(dependency, name);
+            		graph.addEdge(name, dependency);
             	}
             }
         } catch (FileNotFoundException e) {
@@ -126,14 +128,16 @@ public class PackageManager {
     	List<String> pkgOrder = new ArrayList<String>();
     	List<String> visited = new ArrayList<String>();
     	
+    	pkgOrder.add(pkg);
     	getInstallationOrder(pkgOrder, visited, pkg);
+    	//pkgOrder.add(pkg); // Add the pkg as the last package to install
     	
     	// DFS returns list in sequential order. So we need to get the reverse
-    	for (int i = visited.size() - 1; i > 0; i--) {
-    		pkgOrder.add(visited.get(i));
-    	}
+//    	for (int i = visited.size() - 1; i >= 0; i--) {
+//    		pkgOrder.add(visited.get(i));
+//    	}
     	
-    	return pkgOrder;
+    	return visited;
     }
     
     /**
@@ -149,8 +153,9 @@ public class PackageManager {
     	
     	for (String s : successors) {
     		if (!visited.contains(s)) {
+    			pkgOrder.add(s); // Add packages starting from root
     			getInstallationOrder(pkgOrder, visited, s);
-    			//pkgOrder.add(s); // Adds pkg in reverse order
+    			//pkgOrder.add(s); // Add packages from deepest level to root
     		}
     	}
     }
@@ -298,9 +303,15 @@ public class PackageManager {
     	return pkgWithMaxDependcies;
     }
 
-    public static void main (String [] args) {
+    public static void main (String [] args) throws FileNotFoundException, IOException, ParseException {
         System.out.println("PackageManager.main()");
+        String fileName = args[0]; // File name passed in as command line argument
+        
+        PackageManager packageManager = new PackageManager();
+        packageManager.constructGraph(fileName);
     }
+    
+	/////---------------- Private Helper Methods ----------------\\\\\
     
     /**
      * Checks if all elements of one list are present in another list i.e. if a list is a 
