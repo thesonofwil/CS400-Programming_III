@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -7,6 +8,8 @@ import java.util.Set;
  * Filename:   Graph.java
  * Project:    p4
  * Authors:    Wilson Tjoeng
+ * Course:	   CS400.010
+ * Due:		   11/19/21
  * 
  * Directed and unweighted graph implementation
  */
@@ -200,6 +203,7 @@ public class Graph implements GraphADT {
 		for (Vertex neighbor : v.dependencies) {
 			neighbors.add(neighbor.data);
 		}
+		Collections.sort(neighbors); // Sort vertices in alphabetical order
 		
 		return neighbors;
 	}
