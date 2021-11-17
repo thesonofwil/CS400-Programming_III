@@ -2,6 +2,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -84,9 +85,9 @@ public class PackageManager {
         } catch (FileNotFoundException e) {
         	System.err.println("Could not find file: " + e.getMessage());
         } catch (IOException e) {
-        	System.err.println(e.getMessage());
+        	System.err.println("IO Exception: " + e.getMessage());
         } catch (ParseException e) {
-        	System.err.println(e.getMessage());
+        	System.err.println("Parse Exception: " + e.getMessage());
         }            
     }
     
@@ -125,7 +126,7 @@ public class PackageManager {
     		throw new PackageNotFoundException();
     	}
     	
-    	List<String> pkgOrder = new ArrayList<String>();
+    	List<String> pkgOrder = new ArrayList<String>(); // This may be redundant 
     	List<String> visited = new ArrayList<String>();
     	
     	pkgOrder.add(pkg);
@@ -228,9 +229,9 @@ public class PackageManager {
         Set<String> unvisited = graph.getAllVertices();
         List<String> visited = new ArrayList<String>();
         
-        List<String> noPredPackages = getPackagesWithNoPredecessors();
+        List<String> noPredPackages = getPackagesWithNoPredecessors(); // Pkgs w/ no predecessors
         
-        List<String> installOrder = new ArrayList<String>(); // Return value
+        List<String> installOrder = getEmptyList(num); // Return value
         
         // For each vertex with no predecessor, push to stack
         for (String v : noPredPackages) {
@@ -243,8 +244,9 @@ public class PackageManager {
         	
         	// If all successors of curr are visited
         	if (isSubsetOfList(graph.getAdjacentVerticesOf(curr), visited)) { 
+        		// Method failing here
         		st.pop();
-        		installOrder.add(num - 1, curr); // Assign num to vertex
+        		installOrder.set(num - 1, curr); // Assign num to vertex
         		num--;
         	} else { // Add an unvisited successor of curr to stack
         		List<String> currSuccessors = graph.getAdjacentVerticesOf(curr);
@@ -282,6 +284,8 @@ public class PackageManager {
     	}
     	
     	// This may not be the most efficient and elegant solution
+    	// Idea: get the installation order list for each package and count the number of
+    	// vertices. Keep track of the one with the largest size.
     	Set<String> packages = graph.getAllVertices();
     	int size = 0;
     	String pkgWithMaxDependcies = "";
@@ -419,7 +423,7 @@ public class PackageManager {
     	
     	for (String s : graph.getAllVertices()) {
     		if (unexplored.contains(s)) {
-    			if (hasCycle(s)) {
+    			if (hasCycle(unexplored, s)) {
     				return true;
     			}
     		}
@@ -516,5 +520,22 @@ public class PackageManager {
     	explored.add(pkg);
     	inProgress.remove(pkg);
     	return false;
+    }
+    
+    /**
+     * Creates and initializes list with an empty string. ArrayList(capacity) does also create a
+     * new list with the given size, but all values are set to null. 
+     * 
+     * @param capacity the number of elements the list should have
+     * @return an initialized list with the given capacity
+     */
+    private List<String> getEmptyList(int capacity) {
+    	List<String> list = new ArrayList<String>();
+    	
+    	for (int i = 0; i < capacity; i++) {
+    		list.add("");
+    	}
+    	
+    	return list;
     }
 }
