@@ -1,3 +1,5 @@
+import static org.junit.Assert.fail;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -43,6 +45,23 @@ public class PackageManagerTest {
 	private final String valid = "C://Users/Wilson Tjoeng/Documents/School/UW CS400/"
 			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
 			+ "p4 - Package Manager/valid.json";
+	
+	// A -> B
+	// C -> D
+	private final String separate = "C://Users/Wilson Tjoeng/Documents/School/UW CS400/"
+			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
+			+ "p4 - Package Manager/separate.json";
+	
+	// A <-> B
+	private final String cyclic = "C://Users/Wilson Tjoeng/Documents/School/UW CS400/"
+			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
+			+ "p4 - Package Manager/cyclic.json";
+	
+	// // A -> B <-> D
+	//  \-> C
+	private final String graphHasACycle = "C://Users/Wilson Tjoeng/Documents/School/UW CS400/"
+			+ "CS400-Programming_III/CS400-Programming_III/Homework/"
+			+ "p4 - Package Manager/graphHasACycle.json";
 	
 	/**
      * @throws java.lang.Exception
@@ -261,4 +280,125 @@ public class PackageManagerTest {
     	assert(order.get(4).equals("C"));
     	assert(order.size() == 5);	
     }
+    
+    @Test
+    void test017_max_dependencies_linear() throws FileNotFoundException, IOException, 
+    ParseException, CycleException {
+    	pkgMgr.constructGraph(linear);
+    	String maxPkg = pkgMgr.getPackageWithMaxDependencies();
+    	
+    	assert (maxPkg.equals("A"));
+    }
+    
+    @Test
+    void test018_max_dependencies_simple() throws FileNotFoundException, IOException, 
+    ParseException, CycleException {
+    	pkgMgr.constructGraph(simple);
+    	String maxPkg = pkgMgr.getPackageWithMaxDependencies();
+    	
+    	assert (maxPkg.equals("A"));
+    }
+    
+    @Test
+    void test019_max_dependencies_sharedDependencies() throws FileNotFoundException, IOException, 
+    ParseException, CycleException {
+    	pkgMgr.constructGraph(sharedDependencies);
+    	String maxPkg = pkgMgr.getPackageWithMaxDependencies();
+    	
+    	assert (maxPkg.equals("A"));
+    }
+    
+    @Test
+    void test020_max_dependencies_sharedDependencies2() throws FileNotFoundException, IOException, 
+    ParseException, CycleException {
+    	pkgMgr.constructGraph(sharedDependencies2);
+    	String maxPkg = pkgMgr.getPackageWithMaxDependencies();
+    	
+    	assert (maxPkg.equals("A"));
+    }
+    
+    @Test
+    void test021_max_dependencies_valid() throws FileNotFoundException, IOException, 
+    ParseException, CycleException {
+    	pkgMgr.constructGraph(valid);
+    	String maxPkg = pkgMgr.getPackageWithMaxDependencies();
+    	
+    	assert (maxPkg.equals("A"));
+    	// E also is valid as it has the same number of dependencies. But the function is written
+    	// so that the unless the # dependencies of the next package > the current, the current
+    	// won't be overwritten
+    }
+    
+    @Test
+    void test022_get_installation_order_A_separate() throws FileNotFoundException, 
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(separate);
+    	List<String> A_dependencies = pkgMgr.getInstallationOrder("A");
+    	
+    	assert(A_dependencies.get(0).equals("A"));
+    	assert(A_dependencies.get(1).equals("B"));
+    	assert(A_dependencies.size() == 2);
+    }
+    
+    @Test
+    void test023_get_installation_order_C_separate() throws FileNotFoundException, 
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(separate);
+    	List<String> C_dependencies = pkgMgr.getInstallationOrder("C");
+    	
+    	assert(C_dependencies.get(0).equals("C"));
+    	assert(C_dependencies.get(1).equals("D"));
+    	assert(C_dependencies.size() == 2);
+    }
+    
+    @Test
+    void test024_to_install_A_C_separate() throws FileNotFoundException, 
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(separate);
+    	List<String> A_order = pkgMgr.toInstall("A", "C");
+    	
+    	assert(A_order.get(0).equals("A"));
+    	assert(A_order.get(1).equals("B"));
+    	assert(A_order.size() == 2);
+    }
+    
+    @Test
+    void test025_to_install_A_B_separate() throws FileNotFoundException, 
+    IOException, ParseException, CycleException, PackageNotFoundException {
+    	pkgMgr.constructGraph(separate);
+    	List<String> A_order = pkgMgr.toInstall("A", "B");
+    	
+    	assert(A_order.get(0).equals("A"));
+    	assert(A_order.size() == 1);
+    }
+    
+    @Test
+    void test026_getInstallationOrder_throws_CycleException_simpleCycle() throws 
+    FileNotFoundException, IOException, ParseException, PackageNotFoundException {
+    	pkgMgr.constructGraph(cyclic);
+    	
+    	try {
+        	List<String> A_dependencies = pkgMgr.getInstallationOrder("A");
+        	fail("CycleException not thrown");
+    	} catch (CycleException e) {
+    	} catch (Exception e) {
+    		fail("CycleException not thrown");
+    	}
+    }
+    
+    @Test
+    void test027_getInstallationOrder_throws_CycleException_graphHasACycle() throws 
+    FileNotFoundException, IOException, ParseException, PackageNotFoundException {
+    	pkgMgr.constructGraph(graphHasACycle);
+    	
+    	try {
+        	List<String> A_dependencies = pkgMgr.getInstallationOrder("A");
+        	fail("CycleException not thrown");
+    	} catch (CycleException e) {
+    	} catch (Exception e) {
+    		fail("CycleException not thrown");
+    	}
+    }
+    
+    // TODO test other exceptions
 }
