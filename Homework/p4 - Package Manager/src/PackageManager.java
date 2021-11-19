@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +73,7 @@ public class PackageManager {
             	JSONObject pkg = (JSONObject) packages.get(i);
             	String name = (String) pkg.get("name");
             	graph.addVertex(name);
+            	//System.out.print("Package: " + name + " ");
             	JSONArray dependencies = (JSONArray) pkg.get("dependencies");
             	
             	// Get each dependency and add an edge. addEdge will automatically create a
@@ -79,15 +81,19 @@ public class PackageManager {
             	// If package A depends on B, then create a directed edge from A to B.
             	for (Object o : dependencies) {
             		String dependency = o.toString();
+            		//System.out.print("Dep: " + dependency + " ");
             		graph.addEdge(name, dependency);
             	}
             }
         } catch (FileNotFoundException e) {
         	System.err.println("Could not find file: " + e.getMessage());
+        	throw new FileNotFoundException();
         } catch (IOException e) {
         	System.err.println("IO Exception: " + e.getMessage());
+        	throw new IOException();
         } catch (ParseException e) {
         	System.err.println("Parse Exception: " + e.getMessage());
+        	throw new ParseException(e.getPosition());
         }            
     }
     
@@ -118,27 +124,24 @@ public class PackageManager {
      * dependency graph.
      */
     public List<String> getInstallationOrder(String pkg) throws CycleException, PackageNotFoundException {
-    	if (hasCycle(pkg)) {
-    		throw new CycleException();
-    	}
     	
     	if (!hasPackage(pkg)) {
     		throw new PackageNotFoundException();
     	}
     	
-    	List<String> pkgOrder = new ArrayList<String>(); // This may be redundant 
+    	if (hasCycle(pkg)) {
+    		throw new CycleException();
+    	}
+    	
+    	List<String> pkgOrder = new ArrayList<String>();
     	List<String> visited = new ArrayList<String>();
     	
     	pkgOrder.add(pkg);
     	getInstallationOrder(pkgOrder, visited, pkg);
-    	//pkgOrder.add(pkg); // Add the pkg as the last package to install
     	
-    	// DFS returns list in sequential order. So we need to get the reverse
-//    	for (int i = visited.size() - 1; i >= 0; i--) {
-//    		pkgOrder.add(visited.get(i));
-//    	}
+    	Collections.reverse(pkgOrder); // Reverse to show packages with least dependencies first
     	
-    	return visited;
+    	return pkgOrder;
     }
     
     /**
@@ -154,9 +157,8 @@ public class PackageManager {
     	
     	for (String s : successors) {
     		if (!visited.contains(s)) {
-    			pkgOrder.add(s); // Add packages starting from root
+    			pkgOrder.add(s); 
     			getInstallationOrder(pkgOrder, visited, s);
-    			//pkgOrder.add(s); // Add packages from deepest level to root
     		}
     	}
     }
@@ -182,12 +184,12 @@ public class PackageManager {
      */
     public List<String> toInstall(String newPkg, String installedPkg) throws CycleException, PackageNotFoundException {
         
-    	if (hasCycle(newPkg) || hasCycle(installedPkg)) {
-    		throw new CycleException();
-    	}
-    	
     	if (!hasPackage(newPkg) || !hasPackage(installedPkg)) {
     		throw new PackageNotFoundException();
+    	}
+    	
+    	if (hasCycle(newPkg) || hasCycle(installedPkg)) {
+    		throw new CycleException();
     	}
     	
     	// First we need to get a list of successors of installedPkg
@@ -229,7 +231,7 @@ public class PackageManager {
         Set<String> unvisited = graph.getAllVertices();
         List<String> visited = new ArrayList<String>();
         
-        List<String> noPredPackages = getPackagesWithNoPredecessors(); // Pkgs w/ no predecessors
+        List<String> noPredPackages = getPackagesWithNoPredecessors(); // Pkgs w/o predecessors
         
         List<String> installOrder = getEmptyList(num); // Return value
         
@@ -241,15 +243,14 @@ public class PackageManager {
         
         while (!st.empty()) {
         	String curr = st.peek();
+        	List<String> currSuccessors = graph.getAdjacentVerticesOf(curr);
         	
         	// If all successors of curr are visited
-        	if (isSubsetOfList(graph.getAdjacentVerticesOf(curr), visited)) { 
-        		// Method failing here
+        	if (currSuccessors != null && isSubsetOfList(currSuccessors, visited)) { 
         		st.pop();
         		installOrder.set(num - 1, curr); // Assign num to vertex
         		num--;
         	} else { // Add an unvisited successor of curr to stack
-        		List<String> currSuccessors = graph.getAdjacentVerticesOf(curr);
         		for (String s : currSuccessors) {
         			if (!visited.contains(s)) {
         				visited.add(s);
@@ -261,6 +262,7 @@ public class PackageManager {
         	}
         }
         
+        Collections.reverse(installOrder); // Reverse contents of list
     	return installOrder;
     }
     
@@ -307,13 +309,13 @@ public class PackageManager {
     	return pkgWithMaxDependcies;
     }
 
-    public static void main (String [] args) throws FileNotFoundException, IOException, ParseException {
-        System.out.println("PackageManager.main()");
-        String fileName = args[0]; // File name passed in as command line argument
-        
-        PackageManager packageManager = new PackageManager();
-        packageManager.constructGraph(fileName);
-    }
+//    public static void main (String [] args) throws FileNotFoundException, IOException, ParseException {
+//        System.out.println("PackageManager.main()");
+//        String fileName = args[0]; // File name passed in as command line argument
+//        
+//        PackageManager packageManager = new PackageManager();
+//        packageManager.constructGraph(fileName);
+//    }
     
 	/////---------------- Private Helper Methods ----------------\\\\\
     
@@ -326,6 +328,15 @@ public class PackageManager {
      * @return true if child is a subset of parent
      */
     private boolean isSubsetOfList(List<String> child, List<String> parent) {
+//    	
+//    	if (child == null || parent == null) {
+//    		return false;
+//    	}
+//    	
+//    	if (child.isEmpty() || parent.isEmpty()) {
+//    		return false;
+//    	}
+    	
     	boolean isSubset = true;
     	
     	for (String s : child) {
@@ -398,7 +409,8 @@ public class PackageManager {
     			if (pkgNeighbors.contains(main)) {
     				hasNoPred = false;
     				successors.put(main, 1);
-    				break; // There is a vertex that points to main
+    				break;
+    				// There is a vertex that points to main
     			}
     		}
     		
