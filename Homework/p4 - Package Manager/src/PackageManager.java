@@ -73,7 +73,6 @@ public class PackageManager {
             	JSONObject pkg = (JSONObject) packages.get(i);
             	String name = (String) pkg.get("name");
             	graph.addVertex(name);
-            	//System.out.print("Package: " + name + " ");
             	JSONArray dependencies = (JSONArray) pkg.get("dependencies");
             	
             	// Get each dependency and add an edge. addEdge will automatically create a
@@ -81,18 +80,17 @@ public class PackageManager {
             	// If package A depends on B, then create a directed edge from A to B.
             	for (Object o : dependencies) {
             		String dependency = o.toString();
-            		//System.out.print("Dep: " + dependency + " ");
             		graph.addEdge(name, dependency);
             	}
             }
         } catch (FileNotFoundException e) {
-        	System.err.println("Could not find file: " + e.getMessage());
+        	//System.err.println("Could not find file: " + e.getMessage());
         	throw new FileNotFoundException();
         } catch (IOException e) {
-        	System.err.println("IO Exception: " + e.getMessage());
+        	//System.err.println("IO Exception: " + e.getMessage());
         	throw new IOException();
         } catch (ParseException e) {
-        	System.err.println("Parse Exception: " + e.getMessage());
+        	//System.err.println("Parse Exception: " + e.getMessage());
         	throw new ParseException(e.getPosition());
         }            
     }
@@ -129,18 +127,12 @@ public class PackageManager {
     		throw new PackageNotFoundException();
     	}
     	
-    	if (hasCycle(pkg)) {
-    		throw new CycleException();
-    	}
+    	List<String> pkgOrder = new ArrayList<String>(); // Order to return
+    	List<String> visited = new ArrayList<String>(); // Keep track of what's been called on
+    	List<String> inProgress = new ArrayList<String>(); // Vertex currently examining
     	
-    	List<String> pkgOrder = new ArrayList<String>();
-    	List<String> visited = new ArrayList<String>();
-    	
-    	pkgOrder.add(pkg);
-    	getInstallationOrder(pkgOrder, visited, pkg);
-    	
-    	Collections.reverse(pkgOrder); // Reverse to show packages with least dependencies first
-    	
+    	getInstallationOrder(pkgOrder, visited, inProgress, pkg);
+    	    	
     	return pkgOrder;
     }
     
@@ -150,17 +142,36 @@ public class PackageManager {
      * @param pkgOrder output list to hold package dependencies 
      * @param visited list to keep track of which vertices have been visited 
      * @param pkg package to visit
+     * @throws CycleException if a cycle is detected while traversing
      */
-    private void getInstallationOrder(List<String> pkgOrder, List<String> visited, String pkg) {
-    	visited.add(pkg);
+    private void getInstallationOrder(List<String> pkgOrder, List<String> visited, 
+    		List<String> inProgress, String pkg) throws CycleException {
+    	
+    	// This conditional helps for topological ordering
+    	if (visited.contains(pkg)) {
+    		return;
+    	}
+    	
+    	// Recursive call iterates on successors. If a successor was already being examined,
+    	// then we've encountered a cycle
+    	if (inProgress.contains(pkg)) {
+    		throw new CycleException();
+    	}
+    	
+    	inProgress.add(pkg);
+    	
     	List<String> successors = graph.getAdjacentVerticesOf(pkg);
     	
+    	// Recursive call on successor
     	for (String s : successors) {
     		if (!visited.contains(s)) {
-    			pkgOrder.add(s); 
-    			getInstallationOrder(pkgOrder, visited, s);
+    			getInstallationOrder(pkgOrder, visited, inProgress, s);
     		}
     	}
+    	
+    	pkgOrder.add(pkg);
+    	visited.add(pkg);
+    	inProgress.remove(pkg);
     }
     
     /**
@@ -188,20 +199,22 @@ public class PackageManager {
     		throw new PackageNotFoundException();
     	}
     	
-    	if (hasCycle(newPkg) || hasCycle(installedPkg)) {
-    		throw new CycleException();
-    	}
-    	
     	// First we need to get a list of successors of installedPkg
     	List<String> installedPkgs = getInstallationOrder(installedPkg);
     	
     	// Next we'll get the list of dependencies for newPkg
     	List<String> newPkgInstallOrder = getInstallationOrder(newPkg);
     	
-    	// Then Get packages found in the second list that are not in the first list. These will 
-    	// be packages that have not been installed yet that need to be. 
+    	// Then remove packages from the second list that are in the first list and therefore have
+    	// have been installed. The remaining will be packages that have not been installed yet 
+    	// that need to be. 
+    	for (String s : installedPkgs) {
+    		if (newPkgInstallOrder.contains(s)) {
+    			newPkgInstallOrder.remove(s);
+    		}
+    	}
     	
-    	return getUniqueElementsInLists(installedPkgs, newPkgInstallOrder);
+    	return newPkgInstallOrder;
     }
     
     /**
@@ -218,52 +231,18 @@ public class PackageManager {
      */
     public List<String> getInstallationOrderForAllPackages() throws CycleException {
         
-    	if (graphHasCycle()) {
-    		throw new CycleException();
+    	// Topological ordering idea: do the same DFS as before, but for all vertices
+    	List<String> pkgOrder = new ArrayList<String>();
+    	List<String> visited = new ArrayList<String>();
+    	List<String> inProgress = new ArrayList<String>();
+    	
+    	Set<String> packages = graph.getAllVertices();
+    	
+    	for (String pkg : packages) {
+    		getInstallationOrder(pkgOrder, visited, inProgress, pkg);
     	}
     	
-    	// Topological ordering
-    	
-    	int num = graph.order(); // Number of vertices
-        Stack<String> st = new Stack<String>();
-        
-        // Keep track of vertices that have or have not been visited
-        Set<String> unvisited = graph.getAllVertices();
-        List<String> visited = new ArrayList<String>();
-        
-        List<String> noPredPackages = getPackagesWithNoPredecessors(); // Pkgs w/o predecessors
-        
-        List<String> installOrder = getEmptyList(num); // Return value
-        
-        // For each vertex with no predecessor, push to stack
-        for (String v : noPredPackages) {
-        	st.push(v);
-        	unvisited.remove(v);
-        }
-        
-        while (!st.empty()) {
-        	String curr = st.peek();
-        	List<String> currSuccessors = graph.getAdjacentVerticesOf(curr);
-        	
-        	// If all successors of curr are visited
-        	if (currSuccessors != null && isSubsetOfList(currSuccessors, visited)) { 
-        		st.pop();
-        		installOrder.set(num - 1, curr); // Assign num to vertex
-        		num--;
-        	} else { // Add an unvisited successor of curr to stack
-        		for (String s : currSuccessors) {
-        			if (!visited.contains(s)) {
-        				visited.add(s);
-        				unvisited.remove(s);
-        				st.push(s);
-        				break;
-        			}
-        		}
-        	}
-        }
-        
-        Collections.reverse(installOrder); // Reverse contents of list
-    	return installOrder;
+    	return pkgOrder;
     }
     
     /**
@@ -278,35 +257,32 @@ public class PackageManager {
      * 
      * @return String, name of the package with most dependencies.
      * @throws CycleException if you encounter a cycle in the graph
+     * @throws PackageNotFoundException 
      */
     public String getPackageWithMaxDependencies() throws CycleException {
-        
-    	if (graphHasCycle()) {
-    		throw new CycleException();
-    	}
     	
     	// This may not be the most efficient and elegant solution
     	// Idea: get the installation order list for each package and count the number of
     	// vertices. Keep track of the one with the largest size.
     	Set<String> packages = graph.getAllVertices();
     	int size = 0;
-    	String pkgWithMaxDependcies = "";
+    	String pkgWithMaxDependencies = "";
     	
     	for (String pkg : packages) {
     		try {
 				List<String> pkgDependencies = getInstallationOrder(pkg);
 				if (pkgDependencies.size() > size) {
 					size = pkgDependencies.size();
-					pkgWithMaxDependcies = pkg;
+					pkgWithMaxDependencies = pkg;
 				}
 			} catch (CycleException e) {
-				e.printStackTrace();
-			} catch (PackageNotFoundException e) {
-				e.printStackTrace();
+				throw new CycleException();
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
     	}
     	
-    	return pkgWithMaxDependcies;
+    	return pkgWithMaxDependencies;
     }
 
 //    public static void main (String [] args) throws FileNotFoundException, IOException, ParseException {
@@ -320,36 +296,6 @@ public class PackageManager {
 	/////---------------- Private Helper Methods ----------------\\\\\
     
     /**
-     * Checks if all elements of one list are present in another list i.e. if a list is a 
-     * subset of another 
-     * 
-     * @param child list whose elements will be examined
-     * @param parent list whose elements will be compared to 
-     * @return true if child is a subset of parent
-     */
-    private boolean isSubsetOfList(List<String> child, List<String> parent) {
-//    	
-//    	if (child == null || parent == null) {
-//    		return false;
-//    	}
-//    	
-//    	if (child.isEmpty() || parent.isEmpty()) {
-//    		return false;
-//    	}
-    	
-    	boolean isSubset = true;
-    	
-    	for (String s : child) {
-    		if (!parent.contains(s)) {
-    			isSubset = false;
-    			break;
-    		}
-    	}
-    	
-    	return isSubset;
-    }
-    
-    /**
      * Checks if dependency graph has a specified package 
      * 
      * @param pkg Package to look for in graph
@@ -360,65 +306,116 @@ public class PackageManager {
     	return packages.contains(pkg);
     }
     
-    /**
-     * Compares the elements between two lists, and returns a new list of just the unique
-     * elements. In shared_dependencies.json, if list1 = [B, D] and list 2 = [A, B, C, D], then
-     * this will return [A, C]. For this function to work, we'll assume the second list contains
-     * more elements.
-     * 
-     * @param list1 smaller list
-     * @param list2 larger list 
-     * @return list of unique elements
-     */
-    private List<String> getUniqueElementsInLists(List<String> list1, List<String> list2) {
-    	List<String> list3 = new ArrayList<String>(list2); // Copies list 2
-    	list3.removeAll(list1);
-    	
-    	return list3;
-    }
+    // The below methods are ones that were used in earlier revisions
     
     /**
-     * Finds and creates a list of all vertices without any predecessors. In a DAG, these 
-     * will essentially be root nodes. 
+     * Checks if all elements of one list are present in another list i.e. if a list is a 
+     * subset of another 
      * 
-     * @return a list of packages with no predecessors
+     * @param child list whose elements will be examined
+     * @param parent list whose elements will be compared to 
+     * @return true if child is a subset of parent
      */
-    private List<String> getPackagesWithNoPredecessors() {
-    	Set<String> packages = graph.getAllVertices();
-    	List<String> noPredPackages = new ArrayList<String>();
-    	//List<String> successors = new ArrayList<String>();; 
-    	
-    	// If a vertex is a successor then by definition it has a predecessor. Hashtable used for
-    	// faster lookup
-    	Hashtable<String, Integer> successors = new Hashtable<String, Integer>();
-    	
-    	// Idea: loop through all packages. For each package, loop through the other packages
-    	// and check if their adjacent neighbors list contains the current package. If none do,
-    	// add to list. Challenge is making this as efficient as possible
-    	for (String main : packages) {
-    		boolean hasNoPred = true;
-    		for (String pkg : packages) {
-    			if (pkg.equals(main) || successors.contains(pkg)) continue; //graph.getAdjacentVerticesOf(main).contains(pkg)) continue;
-    			
-    			// Add adjacent neighbors to successors list. These will be skipped next iteration
-    			List<String> pkgNeighbors = graph.getAdjacentVerticesOf(pkg);
-    			for (String pkgNeighbor : pkgNeighbors) {
-    				successors.put(pkgNeighbor, 1);
-    			}
-    			
-    			if (pkgNeighbors.contains(main)) {
-    				hasNoPred = false;
-    				successors.put(main, 1);
-    				break;
-    				// There is a vertex that points to main
-    			}
-    		}
-    		
-    		if (hasNoPred) noPredPackages.add(main);
-    	}
-    	
-    	return noPredPackages;
-    }
+//    private boolean isSubsetOfList(List<String> child, List<String> parent) {
+////    	
+////    	if (child == null || parent == null) {
+////    		return false;
+////    	}
+////    	
+////    	if (child.isEmpty() || parent.isEmpty()) {
+////    		return false;
+////    	}
+//    	
+//    	boolean isSubset = true;
+//    	
+//    	for (String s : child) {
+//    		if (!parent.contains(s)) {
+//    			isSubset = false;
+//    			break;
+//    		}
+//    	}
+//    	
+//    	return isSubset;
+//    }
+    
+//    /**
+//     * Compares the elements between two lists, and returns a new list of just the unique
+//     * elements. In shared_dependencies.json, if list1 = [B, D] and list 2 = [A, B, C, D], then
+//     * this will return [A, C]. For this function to work, we'll assume the second list contains
+//     * more elements.
+//     * 
+//     * @param list1 smaller list
+//     * @param list2 larger list 
+//     * @return list of unique elements
+//     */
+//    private List<String> getUniqueElementsInLists(List<String> list1, List<String> list2) {
+//    	List<String> list3 = new ArrayList<String>(list2); // Copies list 2
+//    	list3.removeAll(list1);
+//    	
+//    	return list3;
+//    }
+//    
+//    /**
+//     * Finds and creates a list of all vertices without any predecessors. In a DAG, these 
+//     * will essentially be root nodes. 
+//     * 
+//     * @return a list of packages with no predecessors
+//     */
+//    private List<String> getPackagesWithNoPredecessors() {
+//    	Set<String> packages = graph.getAllVertices();
+//    	List<String> noPredPackages = new ArrayList<String>();
+//    	//List<String> successors = new ArrayList<String>();; 
+//    	
+//    	// If a vertex is a successor then by definition it has a predecessor. Hashtable used for
+//    	// faster lookup
+//    	Hashtable<String, Integer> successors = new Hashtable<String, Integer>();
+//    	
+//    	// Idea: loop through all packages. For each package, loop through the other packages
+//    	// and check if their adjacent neighbors list contains the current package. If none do,
+//    	// add to list. Challenge is making this as efficient as possible
+//    	for (String main : packages) {
+//    		boolean hasNoPred = true;
+//    		for (String pkg : packages) {
+//    			if (pkg.equals(main) || successors.contains(pkg)) continue; //graph.getAdjacentVerticesOf(main).contains(pkg)) continue;
+//    			
+//    			// Add adjacent neighbors to successors list. These will be skipped next iteration
+//    			List<String> pkgNeighbors = graph.getAdjacentVerticesOf(pkg);
+//    			for (String pkgNeighbor : pkgNeighbors) {
+//    				successors.put(pkgNeighbor, 1);
+//    			}
+//    			
+//    			if (pkgNeighbors.contains(main)) {
+//    				hasNoPred = false;
+//    				successors.put(main, 1);
+//    				break;
+//    				// There is a vertex that points to main
+//    			}
+//    		}
+//    		
+//    		if (hasNoPred) noPredPackages.add(main);
+//    	}
+//    	
+//    	return noPredPackages;
+//    }
+//    
+    
+    /**
+//   * Creates and initializes list with an empty string. ArrayList(capacity) does also create a
+//   * new list with the given size, but all values are set to null. 
+//   * 
+//   * @param capacity the number of elements the list should have
+//   * @return an initialized list with the given capacity
+//   */
+//  private List<String> getEmptyList(int capacity) {
+//  	List<String> list = new ArrayList<String>();
+//  	
+//  	for (int i = 0; i < capacity; i++) {
+//  		list.add("");
+//  	}
+//  	
+//  	return list;
+//  }
+//}
     
     /**
      * Detects if a cycle exists in the graph which should be acyclic. This function explores each
@@ -426,22 +423,22 @@ public class PackageManager {
      * 
      * @return true if the graph contains at least one cycle
      */
-    private boolean graphHasCycle() {
-    	List<String> unexplored = new ArrayList<String>();
-    	
-    	for (String s : graph.getAllVertices()) {
-    		unexplored.add(s);
-    	}
-    	
-    	for (String s : graph.getAllVertices()) {
-    		if (unexplored.contains(s)) {
-    			if (hasCycle(unexplored, s)) {
-    				return true;
-    			}
-    		}
-    	}
-    	return false;
-    }
+//    private boolean graphHasCycle() {
+//    	List<String> unexplored = new ArrayList<String>();
+//    	
+//    	for (String s : graph.getAllVertices()) {
+//    		unexplored.add(s);
+//    	}
+//    	
+//    	for (String s : graph.getAllVertices()) {
+//    		if (unexplored.contains(s)) {
+//    			if (hasCycle(unexplored, s)) {
+//    				return true;
+//    			}
+//    		}
+//    	}
+//    	return false;
+//    }
     
     /**
      * Detects if a cycle exists and can be reached from a given vertex
@@ -449,105 +446,89 @@ public class PackageManager {
      * @param pkg the package vertex to start the traversal from
      * @return true if there is a cycle that can be reached from pkg
      */
-    private boolean hasCycle(String pkg) {
-    	List<String> inProgress = new ArrayList<String>();
-    	List<String> explored = new ArrayList<String>();
-    	
-    	return hasCycleHelper(inProgress, explored, pkg);
-    }
+//    private boolean hasCycle(String pkg) {
+//    	List<String> inProgress = new ArrayList<String>();
+//    	List<String> explored = new ArrayList<String>();
+//    	
+//    	return hasCycleHelper(inProgress, explored, pkg);
+//    }
+//    
+//    /**
+//     * Detects if a cycle exists and can be reached from a given vertex. Intended to be used 
+//     * with graphHasCycle()
+//     * 
+//     * @param unexplored ADT holding a list of vertices that haven't been processed yet
+//     * @param pkg current package vertex to start exploration on
+//     * @return true if there is a cycle that can be reached from pkg
+//     */
+//    private boolean hasCycle(List<String> unexplored, String pkg) {
+//    	List<String> inProgress = new ArrayList<String>();
+//    	List<String> explored = new ArrayList<String>();
+//    	
+//    	return hasCycleHelper(unexplored, inProgress, explored, pkg);
+//    }
+//    
+//    /**
+//     * Recursive helper function for hasCycle() to detect if a graph has a cycle that can be
+//     * reached starting from a given package
+//     * 
+//     * @param inProgress ADT holding a list of vertices that are currently being explored
+//     * @param explored ADT holding a list of vertices that have been explored and processed
+//     * @param pkg current package vertex to start exploration on
+//     * @return true if there is a cycle that can be reached from pkg
+//     */
+//    private boolean hasCycleHelper(List<String> inProgress, List<String> explored, String pkg) {
+//    	inProgress.add(pkg);
+//    	List<String> successors = graph.getAdjacentVerticesOf(pkg);
+//    	
+//    	for (String s : successors) {
+//    		if (inProgress.contains(s)) {
+//    			return true;
+//    		}
+//    		
+//    		if (!explored.contains(s)) {
+//    			if (hasCycleHelper(inProgress, explored, s)) {
+//    				return true;
+//    			}
+//    		}
+//    	}
+//    	
+//    	explored.add(pkg);
+//    	inProgress.remove(pkg);
+//    	return false;
+//    }
+//    
+//    /**
+//     * Recursive helper function for hasCycle() to detect if a graph has a cycle that can be
+//     * reached starting from a given package. Intended to be used with graphHasCycle()
+//     * 
+//     * @param unexplored ADT holding a list of vertices that haven't been processed yet
+//     * @param inProgress ADT holding a list of vertices that are currently being explored
+//     * @param explored ADT holding a list of vertices that have been explored and processed
+//     * @param pkg current package vertex to start exploration on
+//     * @return true if there is a cycle that can be reached from pkg
+//     */
+//    private boolean hasCycleHelper(List<String> unexplored, List<String> inProgress, 
+//    		List<String> explored, String pkg) {
+//    	inProgress.add(pkg);
+//    	unexplored.remove(pkg);
+//    	List<String> successors = graph.getAdjacentVerticesOf(pkg);
+//    	
+//    	for (String s : successors) {
+//    		if (inProgress.contains(s)) {
+//    			return true;
+//    		}
+//    		
+//    		if (!explored.contains(s)) {
+//    			if (hasCycleHelper(unexplored, inProgress, explored, s)) {
+//    				return true;
+//    			}
+//    		}
+//    	}
+//    	
+//    	explored.add(pkg);
+//    	inProgress.remove(pkg);
+//    	return false;
+//    }
     
-    /**
-     * Detects if a cycle exists and can be reached from a given vertex. Intended to be used 
-     * with graphHasCycle()
-     * 
-     * @param unexplored ADT holding a list of vertices that haven't been processed yet
-     * @param pkg current package vertex to start exploration on
-     * @return true if there is a cycle that can be reached from pkg
-     */
-    private boolean hasCycle(List<String> unexplored, String pkg) {
-    	List<String> inProgress = new ArrayList<String>();
-    	List<String> explored = new ArrayList<String>();
-    	
-    	return hasCycleHelper(unexplored, inProgress, explored, pkg);
-    }
-    
-    /**
-     * Recursive helper function for hasCycle() to detect if a graph has a cycle that can be
-     * reached starting from a given package
-     * 
-     * @param inProgress ADT holding a list of vertices that are currently being explored
-     * @param explored ADT holding a list of vertices that have been explored and processed
-     * @param pkg current package vertex to start exploration on
-     * @return true if there is a cycle that can be reached from pkg
-     */
-    private boolean hasCycleHelper(List<String> inProgress, List<String> explored, String pkg) {
-    	inProgress.add(pkg);
-    	List<String> successors = graph.getAdjacentVerticesOf(pkg);
-    	
-    	for (String s : successors) {
-    		if (inProgress.contains(s)) {
-    			return true;
-    		}
-    		
-    		if (!explored.contains(s)) {
-    			if (hasCycleHelper(inProgress, explored, s)) {
-    				return true;
-    			}
-    		}
-    	}
-    	
-    	explored.add(pkg);
-    	inProgress.remove(pkg);
-    	return false;
-    }
-    
-    /**
-     * Recursive helper function for hasCycle() to detect if a graph has a cycle that can be
-     * reached starting from a given package. Intended to be used with graphHasCycle()
-     * 
-     * @param unexplored ADT holding a list of vertices that haven't been processed yet
-     * @param inProgress ADT holding a list of vertices that are currently being explored
-     * @param explored ADT holding a list of vertices that have been explored and processed
-     * @param pkg current package vertex to start exploration on
-     * @return true if there is a cycle that can be reached from pkg
-     */
-    private boolean hasCycleHelper(List<String> unexplored, List<String> inProgress, 
-    		List<String> explored, String pkg) {
-    	inProgress.add(pkg);
-    	unexplored.remove(pkg);
-    	List<String> successors = graph.getAdjacentVerticesOf(pkg);
-    	
-    	for (String s : successors) {
-    		if (inProgress.contains(s)) {
-    			return true;
-    		}
-    		
-    		if (!explored.contains(s)) {
-    			if (hasCycleHelper(unexplored, inProgress, explored, s)) {
-    				return true;
-    			}
-    		}
-    	}
-    	
-    	explored.add(pkg);
-    	inProgress.remove(pkg);
-    	return false;
-    }
-    
-    /**
-     * Creates and initializes list with an empty string. ArrayList(capacity) does also create a
-     * new list with the given size, but all values are set to null. 
-     * 
-     * @param capacity the number of elements the list should have
-     * @return an initialized list with the given capacity
-     */
-    private List<String> getEmptyList(int capacity) {
-    	List<String> list = new ArrayList<String>();
-    	
-    	for (int i = 0; i < capacity; i++) {
-    		list.add("");
-    	}
-    	
-    	return list;
-    }
 }
