@@ -203,6 +203,7 @@ public class Graph implements GraphADT {
 		for (Vertex neighbor : v.dependencies) {
 			neighbors.add(neighbor.data);
 		}
+		
 		Collections.sort(neighbors); // Sort vertices in alphabetical order
 		
 		return neighbors;
