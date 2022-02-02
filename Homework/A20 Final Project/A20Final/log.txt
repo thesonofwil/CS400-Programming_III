@@ -1,0 +1,22 @@
+a john alex
+a john abe
+a alex abe
+a bob alex
+a bob john
+a tom john
+a tom alex
+s bob
+s john
+s alex
+a a b
+a c d
+a e f
+a g h
+s bob
+s john
+s alex
+s bob
+s john
+s abe
+s john
+s bob

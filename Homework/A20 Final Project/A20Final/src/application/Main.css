@@ -1,0 +1,154 @@
+/* Controls mainly background */
+#borderPane {
+	-fx-background: rgb(231, 241, 252);
+}
+
+.button { 
+   -fx-background-color: rgb(255, 153, 51); 
+   -fx-text-fill: white;
+
+   -fx-pref-width: 150px;
+   -fx-text-alignment: left;   
+
+   -fx-background-radius: 20px; 
+   -fx-border-radius: 20px;
+   -fx-border-color: black;
+
+   -fx-padding: 10px;
+   -fx-border-insets: 10px;
+   -fx-background-insets: 10px;
+}
+
+.button:hover {
+   -fx-background-color: rgb(249, 207, 166);
+}
+
+#backBtn {
+   -fx-graphic: url(../../resources/home_icon_black.png);
+   -fx-content-display: graphic-only;
+
+   /* override background, border, and padding from .button */
+   -fx-background-color: transparent;
+   -fx-background-radius: 100; /* make button a circle */
+   -fx-border-radius: 0;
+   -fx-border-color: transparent;
+   -fx-pref-width: 2px;
+}
+
+#backBtn:hover {
+   -fx-background-color: white;
+}
+
+#centralUserBtn {
+   -fx-graphic: url(../../resources/central_user_black.png);
+   -fx-content-display: left;
+	
+	
+   /* override background, border, and padding from .button */
+   -fx-background-radius: 100; /* make button a circle */
+}
+
+#friendsBtn {
+   -fx-graphic: url(../../resources/friend_black.png);
+   -fx-content-display: left;
+
+   /* override background, border, and padding from .button */
+   -fx-background-radius: 100; /* make button a circle */
+
+   -fx-padding: 10px;
+   -fx-border-insets: 10px;
+   -fx-background-insets: 10px;
+}
+
+#importBtn {
+   -fx-background-color: rgb(199,253,197);
+   -fx-text-fill: rgb(48, 47, 45);
+
+   -fx-background-radius: 2px;
+   -fx-border-radius: 2px;
+
+   -fx-pref-width: 50px;
+
+   -fx-padding: 3px;
+   -fx-border-insets: 3px;
+   -fx-background-insets: 3px;
+}
+
+#importBtn:hover {
+   -fx-background-color: rgb(229,247,228);
+}
+
+#addBtn {
+   -fx-background-color: rgb(199,253,197);
+   -fx-text-fill: rgb(48, 47, 45);
+
+   -fx-background-radius: 2px;
+   -fx-border-radius: 2px;
+
+   -fx-pref-width: 50px;
+
+   -fx-padding: 3px;
+   -fx-border-insets: 3px;
+   -fx-background-insets: 3px;
+}
+
+#addBtn:hover {
+   -fx-background-color: rgb(229,247,228);
+}
+
+#deleteBtn {
+   -fx-background-color: rgb(255,186,186);
+   -fx-text-fill: rgb(48, 47, 45);
+
+   -fx-background-radius: 2px;
+   -fx-border-radius: 2px;
+
+   -fx-pref-width: 50px;
+
+   -fx-padding: 3px;
+   -fx-border-insets: 3px;
+   -fx-background-insets: 3px;
+}
+
+#deleteBtn:hover {
+   -fx-background-color: rgb(255,230,230);
+}
+
+#quitBtn {
+   -fx-background-color: rgb(213, 212, 210);
+   -fx-text-fill: rgb(48, 47, 45);
+
+   -fx-background-radius: 2px;
+   -fx-border-radius: 2px;
+
+   -fx-pref-width: 50px;
+
+   -fx-padding: 3px;
+   -fx-border-insets: 3px;
+   -fx-background-insets: 3px;
+}
+
+#quitBtn:hover {
+   -fx-background-color: rgb(238, 238, 238);
+}
+
+#header {
+   -fx-font-size: 30;
+   -fx-text-fill: rgb(40, 116, 174);
+}
+
+#displayHeader {
+   -fx-font-size: 16;
+   -fx-text-fill: rgb(255,0,0);
+}
+
+/* "The Social Network Visualizer" */
+#appTitle {
+   -fx-font-weight: bold;
+
+   -fx-text-fill: rgb(61, 174, 57);
+
+   -fx-padding: 50px;
+   -fx-border-insets: 50px;
+   -fx-background-insets: 50px;
+}
